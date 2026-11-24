@@ -1,5 +1,9 @@
 # Cambios
 
+## 1.0.1
+
+- Arreglo de la instalación en Home Assistant.
+
 ## 1.0.0
 
 - Avisos al móvil: caducidades del día (hoy, mañana y los días que elijas) a la hora que quieras, productos que bajan del mínimo y cambios en la lista. Cada persona elige su móvil y qué avisos quiere.
