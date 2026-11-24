@@ -1,0 +1,10 @@
+configuration:
+  administradores:
+    name: Administradores
+    description: Nombres de usuario de Home Assistant que serán administradores de Frescario. Si lo dejas vacío, la primera persona que entre será la administradora.
+  lista_ha:
+    name: Lista de la compra de Home Assistant
+    description: Entidad de lista de tareas que se sincroniza con la lista de Frescario, para poder añadir cosas por voz. Por ejemplo todo.lista_de_la_compra. Déjalo vacío para no sincronizar.
+  gemini_api_key:
+    name: Clave de Gemini para leer tickets
+    description: Clave de la API de Google Gemini. Con ella Frescario lee las fotos de los tickets del súper.

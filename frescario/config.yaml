@@ -1,5 +1,5 @@
 name: Frescario
-version: "0.1.0"
+version: "1.0.0"
 slug: frescario
 description: Gestión de la despensa, la nevera, el congelador y la lista de la compra de casa
 url: https://github.com/oskilla25/frescario
@@ -15,8 +15,13 @@ panel_icon: mdi:fridge-outline
 panel_title: Frescario
 panel_admin: false
 homeassistant_api: true
+hassio_api: true
 options:
   administradores: []
+  lista_ha: ""
+  gemini_api_key: ""
 schema:
   administradores:
     - str
+  lista_ha: str?
+  gemini_api_key: password?

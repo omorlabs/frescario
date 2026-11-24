@@ -1,0 +1,10 @@
+configuration:
+  administradores:
+    name: Administrators
+    description: Home Assistant usernames that will be Frescario administrators. Leave empty and the first person to open it becomes the administrator.
+  lista_ha:
+    name: Home Assistant shopping list
+    description: To-do list entity synced with the Frescario shopping list, so items can be added by voice. For example todo.shopping_list. Leave empty to disable.
+  gemini_api_key:
+    name: Gemini key to read receipts
+    description: Google Gemini API key used to read photos of supermarket receipts.
