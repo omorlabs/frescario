@@ -285,7 +285,7 @@
     if (f) return '<section class="card"><div class="card-cab"><h2>Resultados</h2><span class="sub">' + f.length + ' encontrados</span></div>' + listaProds(f, 'Nada con ese nombre.' + (puedeEditar() ? '<button class="bt pri" data-acc="nuevoQ">Añadir "' + esc(S.q.trim()) + '"</button>' : ''), true) + '</section>';
     if (!D.productos.length && !S.edit) {
       return '<section class="card"><div class="vacio"><b>Tu almacén está vacío</b>Empieza añadiendo lo que tienes en la nevera, la despensa y el congelador. Lo más rápido es escanear el código de barras o la foto del ticket del súper.' +
-        (puedeEditar() ? '<span style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="bt pri" data-acc="escanear">' + icono('codigo', 18) + 'Escanear código</button><button class="bt" data-acc="ticket">' + icono('ticket', 18) + 'Leer un ticket</button><button class="bt" data-acc="nuevo">' + icono('mas', 18, 'currentColor', 2.4) + 'Añadir a mano</button></span>' : '') + '</div></section>';
+        (puedeEditar() ? '<span style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="bt pri" data-acc="escanear">' + icono('codigo', 18) + 'Escanear código</button><button class="bt" data-acc="ticket">' + icono('ticket', 18) + 'Escanear ticket</button><button class="bt" data-acc="nuevo">' + icono('mas', 18, 'currentColor', 2.4) + 'Añadir a mano</button></span>' : '') + '</div></section>';
     }
     var ws = D.yo.prefs.widgets || [];
     var vis = ws.filter(function (w) { return w.on && WN[w.k]; });
@@ -409,6 +409,7 @@
     if (q) lista = lista.filter(function (p) { return p.nombre.toLowerCase().indexOf(q) >= 0 || (p.categoria || '').toLowerCase().indexOf(q) >= 0; });
     var vacio = q ? 'Nada con ese nombre.' + (puedeEditar() ? '<button class="bt pri" data-acc="nuevoQ">Añadir "' + esc(S.q.trim()) + '"</button>' : '') : D.productos.length ? 'Aquí no hay nada.' : '<b>Tu almacén está vacío</b>' + (puedeEditar() ? '<button class="bt pri" data-acc="menuAnadir">Añadir el primer producto</button>' : '');
     var extra = '';
+    if (puedeEditar()) h = '<div class="atajos-alm"><button class="bt" data-acc="ticket">' + icono('ticket', 18) + 'Escanear ticket</button><button class="bt" data-acc="escanear">' + icono('codigo', 18) + 'Escanear código</button><button class="bt" data-acc="nuevo">' + icono('mas', 18, 'currentColor', 2.4) + 'Añadir a mano</button></div>' + h;
     if (S.alm === 'bajo' && lista.length && puedeEditar()) extra = '<button class="bt" data-acc="faltantes" style="align-self:flex-start">' + icono('carro', 18) + 'Añadir todo a la lista</button>';
     return h + extra + listaProds(lista, vacio, ['todo', 'bajo', 'agotado'].indexOf(S.alm) >= 0);
   }
@@ -813,37 +814,100 @@
 
   /* ---------- tickets ---------- */
   var ticket = null;
+  /* escáner de tickets en directo */
+  var tk = { fotos: [], stream: null, linterna: false };
+  function pararCamaraTicket() {
+    if (tk.stream) { tk.stream.getTracks().forEach(function (t) { t.stop(); }); tk.stream = null; }
+    tk.linterna = false;
+  }
   function abrirTicket() {
-    ticket = null;
-    abrirCapa('<div class="hoja" role="dialog" aria-modal="true" aria-labelledby="h-t"><div class="hoja-cab"><h2 id="h-t">Leer un ticket</h2><button class="bt-ic suave" data-cerrar="1" aria-label="Cerrar">' + icono('x', 20) + '</button></div><div class="hoja-cuerpo" id="tk-cuerpo">' +
-      (D.ha.tickets ? '' : '<div class="nota">La lectura de tickets no está activada todavía. ' + (esAdmin() ? 'Se activa en la configuración del complemento de Frescario en Home Assistant.' : 'Pídeselo al administrador de la casa.') + '</div>') +
-      '<div class="vacio" style="padding:20px 10px"><span class="ico big tn-azul"><span class="tc">' + icono('ticket', 34) + '</span></span><b>Haz una foto al ticket del súper</b>Frescario lee lo que has comprado, lo mete en el almacén y guarda los precios. Pon el ticket recto y con buena luz.</div>' +
-      '<div style="display:flex;flex-direction:column;gap:10px"><label class="bt pri full" style="cursor:pointer">' + icono('camara', 18) + 'Hacer foto<input type="file" accept="image/*" capture="environment" class="oculto" data-tkfile="1"' + (D.ha.tickets ? '' : ' disabled') + '></label>' +
-      '<label class="bt full" style="cursor:pointer">' + icono('imagen', 18) + 'Elegir de la galería<input type="file" accept="image/*" class="oculto" data-tkfile="1"' + (D.ha.tickets ? '' : ' disabled') + '></label></div></div></div>');
+    ticket = null; tk.fotos = []; pararCamaraTicket();
+    abrirCapa('<div class="hoja ancha" role="dialog" aria-modal="true" aria-labelledby="h-t"><div class="hoja-cab"><h2 id="h-t">Escanear ticket</h2><button class="bt-ic suave" data-cerrar="1" aria-label="Cerrar">' + icono('x', 20) + '</button></div><div class="hoja-cuerpo" id="tk-cuerpo"></div></div>', function () { pararCamaraTicket(); tk.fotos = []; });
+    pintarCapturaTicket();
+  }
+  function pintarCapturaTicket() {
+    var cu = document.getElementById('tk-cuerpo'); if (!cu) return;
+    var camara = window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+    var h = '';
+    if (!D.ha.tickets) h += '<div class="nota">La lectura de tickets no está activada todavía. ' + (esAdmin() ? 'Se activa en la configuración de la app Frescario en Home Assistant.' : 'Pídeselo al administrador de la casa.') + '</div>';
+    if (camara) {
+      h += '<div class="visor-tk" id="visor-tk"><video id="tk-video" playsinline muted></video><div class="marco-tk"><i></i><i></i><i></i><i></i></div><div class="flash-tk" id="flash-tk"></div>' +
+        '<p id="tk-msg">' + (tk.fotos.length ? 'Parte ' + (tk.fotos.length + 1) + ': encuadra el trozo siguiente del ticket' : 'Encuadra el ticket dentro del marco') + '</p></div>' +
+        '<div class="tk-controles"><button class="bt-ic suave" data-acc="tkLinterna" id="tk-lint" aria-label="Linterna" title="Linterna">' + icono('sol', 22) + '</button>' +
+        '<button class="disparo" data-acc="tkCapturar" aria-label="Hacer la foto"' + (tk.fotos.length >= 4 ? ' disabled' : '') + '><span></span></button>' +
+        '<label class="bt-ic suave" style="cursor:pointer" title="Elegir de la galería" aria-label="Elegir de la galería">' + icono('imagen', 22) + '<input type="file" accept="image/*" multiple class="oculto" data-tkfile="1"></label></div>';
+    } else {
+      h += '<div class="vacio" style="padding:16px 10px"><span class="ico big tn-azul"><span class="tc">' + icono('ticket', 34) + '</span></span><b>Haz una foto al ticket del súper</b>Para ver la cámara aquí mismo, entra en Home Assistant por su dirección segura (https).</div>' +
+        '<label class="bt pri full" style="cursor:pointer">' + icono('camara', 18) + 'Hacer foto<input type="file" accept="image/*" capture="environment" class="oculto" data-tkfile="1"></label>' +
+        '<label class="bt full" style="cursor:pointer">' + icono('imagen', 18) + 'Elegir de la galería<input type="file" accept="image/*" multiple class="oculto" data-tkfile="1"></label>';
+    }
+    if (tk.fotos.length) {
+      h += '<div class="tk-partes">' + tk.fotos.map(function (f, i) { return '<div class="tk-parte"><img src="' + f + '" alt="Parte ' + (i + 1) + ' del ticket"><span>' + (i + 1) + '</span><button data-tkquitar="' + i + '" aria-label="Quitar la parte ' + (i + 1) + '">' + icono('x', 14, 'currentColor', 2.6) + '</button></div>'; }).join('') + '</div>' +
+        '<button class="bt pri full" data-acc="tkLeer"' + (D.ha.tickets ? '' : ' disabled') + '>' + icono('check', 18, 'currentColor', 2.6) + 'Leer el ticket' + (tk.fotos.length > 1 ? ' (' + tk.fotos.length + ' partes)' : '') + '</button>';
+    }
+    h += '<p class="sub" style="margin:0">Pon el ticket recto, sobre algo oscuro y con buena luz. Si es muy largo, hazlo en varias fotos de arriba abajo (hasta 4).</p>';
+    cu.innerHTML = h;
+    if (camara) arrancarCamaraTicket();
+  }
+  function arrancarCamaraTicket() {
+    var v = document.getElementById('tk-video'); if (!v) return;
+    var poner = function (st) { v.srcObject = st; v.play().catch(function () {}); var lt = document.getElementById('tk-lint'); var tr = st.getVideoTracks()[0]; var cap = tr && tr.getCapabilities ? tr.getCapabilities() : {}; if (lt && !cap.torch) lt.style.visibility = 'hidden'; };
+    if (tk.stream) { poner(tk.stream); return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (st) {
+      if (!document.getElementById('tk-video')) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+      tk.stream = st; poner(st);
+    }).catch(function () {
+      var m = document.getElementById('tk-msg'); if (m) m.textContent = 'No se ha podido abrir la cámara. Revisa el permiso o elige la foto de la galería.';
+    });
+  }
+  function capturarTicket() {
+    var v = document.getElementById('tk-video'), marco = document.querySelector('.marco-tk');
+    if (!v || !v.videoWidth || !marco) return;
+    var vr = v.getBoundingClientRect(), mr = marco.getBoundingClientRect();
+    var esc = Math.max(vr.width / v.videoWidth, vr.height / v.videoHeight);
+    var dx = (vr.width - v.videoWidth * esc) / 2, dy = (vr.height - v.videoHeight * esc) / 2;
+    var sx = Math.max(0, (mr.left - vr.left - dx) / esc), sy = Math.max(0, (mr.top - vr.top - dy) / esc);
+    var sw = Math.min(v.videoWidth - sx, mr.width / esc), sh = Math.min(v.videoHeight - sy, mr.height / esc);
+    var k = Math.min(1, 2000 / Math.max(sw, sh));
+    var c = document.createElement('canvas'); c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+    var ctx = c.getContext('2d');
+    try { ctx.filter = 'grayscale(1) contrast(1.35) brightness(1.08)'; } catch (_) {}
+    ctx.drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    tk.fotos.push(c.toDataURL('image/jpeg', 0.85));
+    var fl = document.getElementById('flash-tk'); if (fl) { fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
+    if (navigator.vibrate) navigator.vibrate(40);
+    setTimeout(pintarCapturaTicket, 160);
   }
   function comprimir(file) {
     return new Promise(function (ok, ko) {
       var img = new Image(), url = URL.createObjectURL(file);
       img.onload = function () {
-        var max = 1800, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        var max = 2000, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
         var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        var ctx = c.getContext('2d');
+        try { ctx.filter = 'grayscale(1) contrast(1.25)'; } catch (_) {}
+        ctx.drawImage(img, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
-        ok(c.toDataURL('image/jpeg', 0.82));
+        ok(c.toDataURL('image/jpeg', 0.85));
       };
       img.onerror = function () { URL.revokeObjectURL(url); ko(new Error('No se ha podido abrir la foto.')); };
       img.src = url;
     });
   }
-  function leerTicket(file) {
+  function anadirArchivosTicket(files) {
+    var lista = Array.prototype.slice.call(files, 0, Math.max(0, 4 - tk.fotos.length));
+    Promise.all(lista.map(comprimir)).then(function (fs) { tk.fotos = tk.fotos.concat(fs); pintarCapturaTicket(); }).catch(fallo);
+  }
+  function leerFotosTicket() {
+    pararCamaraTicket();
     var cu = document.getElementById('tk-cuerpo');
-    cu.innerHTML = '<div class="vacio" style="padding:50px 10px"><div class="arranque-logo"></div><b>Leyendo el ticket…</b>Esto tarda unos segundos.</div>';
-    comprimir(file).then(function (dataUrl) { return api('POST', 'ticket/leer', { imagen: dataUrl }); }).then(function (r) {
+    cu.innerHTML = '<div class="vacio" style="padding:50px 10px"><div class="arranque-logo"></div><b>Leyendo el ticket…</b>Esto tarda unos segundos' + (tk.fotos.length > 1 ? ', son ' + tk.fotos.length + ' partes' : '') + '.</div>';
+    api('POST', 'ticket/leer', { imagenes: tk.fotos }).then(function (r) {
       ticket = r;
-      if (!r.articulos.length) { cu.innerHTML = '<div class="vacio"><b>No he encontrado artículos</b>Prueba con otra foto más nítida.</div>'; return; }
+      if (!r.articulos.length) { cu.innerHTML = '<div class="vacio"><b>No he encontrado artículos</b>Prueba con otra foto más nítida.<button class="bt" data-acc="ticket">Probar otra vez</button></div>'; return; }
       pintarRevision();
     }).catch(function (e) {
-      cu.innerHTML = '<div class="vacio"><b>No se ha podido leer</b>' + esc(e.message) + '<button class="bt" data-acc="ticket">Probar otra vez</button></div>';
+      cu.innerHTML = '<div class="vacio"><b>No se ha podido leer</b>' + esc(e.message) + '<span style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="bt pri" data-acc="tkLeer">Reintentar</button><button class="bt" data-acc="ticket">Hacer otra foto</button></span></div>';
     });
   }
   function almDestino(a) {
@@ -972,6 +1036,7 @@
     if (ds.catmov) { api('PUT', 'categorias/orden', { nombre: ds.catmov, dir: parseInt(ds.dir, 10) }).then(function (r) { return hecho(r); }).catch(fallo); return; }
     if (ds.tdel) { confirmar('Borrar esta compra', 'Se quita de las estadísticas de gasto. Los productos del almacén no se tocan.', 'Borrar', true).then(function (ok) { if (ok) api('DELETE', 'tickets/' + ds.tdel).then(function (r) { return hecho(r, 'Compra borrada'); }).catch(fallo); }); return; }
     if (ds.supdel) { api('DELETE', 'supers', { nombre: ds.supdel }).then(function (r) { return hecho(r); }).catch(fallo); return; }
+    if (ds.tkquitar) { tk.fotos.splice(+ds.tkquitar, 1); pintarCapturaTicket(); return; }
     if (ds.tkinc) { leerCamposTicket(); var art = ticket.articulos[+ds.tkinc]; art.incluir = art.incluir === false; pintarRevision(); return; }
     if (ds.adel) {
       var al = almPorId(ds.adel);
@@ -992,7 +1057,7 @@
     if (acc === 'menuAnadir') {
       menu('Añadir', [
         { t: 'Escanear código de barras', s: 'Lo más rápido para un producto', ic: 'codigo', tono: 'tn-verde', attr: 'data-acc="escanear"' },
-        { t: 'Leer un ticket del súper', s: D.ha.tickets ? 'Mete toda la compra de golpe' : 'Sin activar todavía', ic: 'ticket', tono: 'tn-azul', attr: 'data-acc="ticket"' },
+        { t: 'Escanear ticket del súper', s: D.ha.tickets ? 'Con la cámara en directo, mete toda la compra de golpe' : 'Sin activar todavía', ic: 'ticket', tono: 'tn-azul', attr: 'data-acc="ticket"' },
         { t: 'Añadir a mano', s: 'Escribe el nombre y la fecha', ic: 'mano', tono: 'tn-amar', attr: 'data-acc="nuevo"' },
         { t: 'Algo a la lista de la compra', s: '', ic: 'carro', tono: 'tn-rojo', attr: 'data-ir="compra"' }
       ]);
@@ -1008,6 +1073,13 @@
     }
     if (acc === 'escanear') { abrirEscaner(); return; }
     if (acc === 'ticket') { abrirTicket(); return; }
+    if (acc === 'tkCapturar') { capturarTicket(); return; }
+    if (acc === 'tkLeer') { if (tk.fotos.length) leerFotosTicket(); return; }
+    if (acc === 'tkLinterna') {
+      var tr = tk.stream && tk.stream.getVideoTracks()[0];
+      if (tr) { tk.linterna = !tk.linterna; tr.applyConstraints({ advanced: [{ torch: tk.linterna }] }).catch(function () {}); t.classList.toggle('on', tk.linterna); }
+      return;
+    }
     if (acc === 'nuevo') { abrirNuevo(); return; }
     if (acc === 'nuevoQ') { abrirNuevo({ nombre: S.q.trim() }); return; }
     if (acc === 'editar') { S.edit = !S.edit; S.q = ''; pintar(); return; }
@@ -1114,7 +1186,7 @@
     if (ds.urol) api('PUT', 'usuarios/' + encodeURIComponent(ds.urol), { rol: el.value }).then(function (r) { return hecho(r, 'Permisos guardados'); }).catch(function (e) { fallo(e); recargar(); });
     if (ds.avh) { var o = {}; o[ds.avh] = el.value; api('PUT', 'ajustes', { avisos: o }).then(function (r) { return hecho(r, 'Hora guardada'); }).catch(fallo); }
     if (ds.avsel) { var o2 = {}; o2[ds.avsel] = parseInt(el.value, 10); api('PUT', 'ajustes', { avisos: o2 }).then(function (r) { return hecho(r, 'Guardado'); }).catch(fallo); }
-    if (ds.tkfile && el.files && el.files[0]) leerTicket(el.files[0]);
+    if (ds.tkfile && el.files && el.files.length) { anadirArchivosTicket(el.files); el.value = ''; }
     if (el.id === 'f-restaurar' && el.files && el.files[0]) {
       var file = el.files[0];
       confirmar('Restaurar copia', 'Se sustituye todo lo que hay ahora en Frescario por lo de la copia. Antes se guarda una copia de lo actual por si acaso.', 'Restaurar', true).then(function (ok) {

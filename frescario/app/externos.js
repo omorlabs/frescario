@@ -56,10 +56,10 @@ async function buscarCodigo(codigo, categorias) {
 }
 
 /* lectura de tickets con Gemini */
-async function leerTicket(clave, base64, mime, categorias) {
+async function leerTicket(clave, imagenes, categorias) {
   const prompt = [
     'Eres un lector de tickets de supermercado en España.',
-    'Extrae los artículos comprados del ticket de la imagen.',
+    'Extrae los artículos comprados del ticket. Puede venir en varias fotos, en orden de arriba abajo; si dos fotos se solapan, no repitas los artículos que salen en las dos.',
     'Para cada artículo da un nombre claro y corto en castellano, desarrollando las abreviaturas del ticket (por ejemplo "LECH.ENT.BRIK" pasa a "Leche entera").',
     'No incluyas bolsas, descuentos, totales, IVA ni formas de pago.',
     'cantidad es el número de unidades compradas (si es a peso, los kilos con decimales).',
@@ -68,7 +68,7 @@ async function leerTicket(clave, base64, mime, categorias) {
     'comercio es el nombre comercial de la tienda (sin S.A., S.L. ni similares). fecha en formato AAAA-MM-DD.'
   ].join(' ');
   const cuerpo = {
-    contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mime || 'image/jpeg', data: base64 } }] }],
+    contents: [{ parts: [{ text: prompt }].concat(imagenes.map((im) => ({ inline_data: { mime_type: im.mime || 'image/jpeg', data: im.data } }))) }],
     generationConfig: {
       temperature: 0.1,
       responseMimeType: 'application/json',

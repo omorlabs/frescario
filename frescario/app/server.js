@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -122,7 +122,7 @@ app.use((req, res, next) => {
   if (ip !== INGRESS_IP) return res.status(403).end();
   next();
 });
-app.use('/api/ticket/leer', express.json({ limit: '9mb' }));
+app.use('/api/ticket/leer', express.json({ limit: '24mb' }));
 app.use('/api/copia', express.json({ limit: '20mb' }));
 app.use(express.json({ limit: '256kb' }));
 
@@ -395,10 +395,16 @@ function parecido(a, b) {
 api.post('/ticket/leer', puedeEditar, async (req, res) => {
   const clave = String(leerOpciones().gemini_api_key || process.env.FRESCARIO_GEMINI_KEY || '').trim();
   if (!clave) return res.status(400).json({ error: 'La lectura de tickets no está activada. Pídeselo al administrador de la casa.' });
-  const m = /^data:(image\/(jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String((req.body || {}).imagen || ''));
-  if (!m) return res.status(400).json({ error: 'No me ha llegado bien la foto. Prueba otra vez.' });
+  const b = req.body || {};
+  const crudas = Array.isArray(b.imagenes) ? b.imagenes.slice(0, 4) : (b.imagen ? [b.imagen] : []);
+  const imgs = [];
+  for (const x of crudas) {
+    const m = /^data:(image\/(jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(x || ''));
+    if (m) imgs.push({ mime: m[1], data: m[3] });
+  }
+  if (!imgs.length) return res.status(400).json({ error: 'No me ha llegado bien la foto. Prueba otra vez.' });
   try {
-    const d = await ext.leerTicket(clave, m[3], m[1], db.categorias);
+    const d = await ext.leerTicket(clave, imgs, db.categorias);
     const arts = (d.articulos || []).slice(0, 80).map((a) => {
       const nombre = txt(a.nombre, 80);
       let mejor = null, score = 0;

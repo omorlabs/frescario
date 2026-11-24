@@ -1,5 +1,11 @@
 # Cambios
 
+## 1.1.0
+
+- Escáner de tickets en directo: la cámara se abre dentro de la app con marco, linterna y disparo.
+- Tickets largos en varias fotos (hasta 4), con mejora automática de contraste para leerlos mejor.
+- Accesos directos en el almacén: escanear ticket, escanear código y añadir a mano.
+
 ## 1.0.1
 
 - Arreglo de la instalación en Home Assistant.
