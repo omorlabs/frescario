@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
 
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -264,6 +264,8 @@ api.put('/yo/prefs', (req, res) => {
   if (TEMAS.includes(b.tema)) p.tema = b.tema;
   if (ACENTOS.includes(b.acento)) p.acento = b.acento;
   if (b.kofi === 'si' || b.kofi === 'no') p.kofi = b.kofi;
+  if (['auto', 'es', 'en'].includes(b.idioma)) p.idioma = b.idioma;
+  if (['es', 'en'].includes(b.idiomaReal)) p.idiomaReal = b.idiomaReal;
   if (Array.isArray(b.widgets)) {
     const vistos = new Set(); const w = [];
     for (const x of b.widgets) {

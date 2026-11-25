@@ -12,6 +12,67 @@
   var COLA_KEY = 'frescario-cola', CACHE_KEY = 'frescario-estado';
   var KOFI = 'https://ko-fi.com/frescario';
 
+  /* ---------- idiomas ---------- */
+  /* El castellano es el idioma base. Cada traducción vive en i18n/<idioma>.json:
+     "textos" traduce textos exactos y "patrones" los que llevan números o nombres. */
+  var LANG = 'es', DICC = null, PATRONES = [], IDIOMAS = ['es', 'en'];
+  function idiomaDe(pref) {
+    if (IDIOMAS.indexOf(pref) >= 0) return pref;
+    var n = String(navigator.language || 'es').toLowerCase();
+    return /^(es|ca|gl|eu)/.test(n) ? 'es' : 'en';
+  }
+  function cargarIdioma(lang) {
+    if (lang === 'es') { LANG = 'es'; DICC = null; PATRONES = []; document.documentElement.lang = 'es'; return Promise.resolve(); }
+    return fetch('i18n/' + lang + '.json?v=' + encodeURIComponent((D && D.version) || '')).then(function (r) { return r.json(); }).then(function (j) {
+      DICC = j.textos || {};
+      PATRONES = (j.patrones || []).map(function (p) { return [new RegExp('^' + p[0] + '$'), p[1]]; });
+      LANG = lang; document.documentElement.lang = lang;
+    }).catch(function () { LANG = 'es'; DICC = null; PATRONES = []; });
+  }
+  function tr(s) {
+    if (!DICC || !s) return s;
+    var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s), t = m[2];
+    if (!t) return s;
+    if (Object.prototype.hasOwnProperty.call(DICC, t)) return m[1] + DICC[t] + m[3];
+    for (var i = 0; i < PATRONES.length; i++) {
+      var r = PATRONES[i][0].exec(t);
+      if (r) return m[1] + PATRONES[i][1].replace(/([$%])(\d)/g, function (_, tipo, n) { var v = r[+n] || ''; return tipo === '%' ? tr(v) : v; }) + m[3];
+    }
+    return s;
+  }
+  var ATTRS_TR = ['placeholder', 'aria-label', 'title', 'alt'];
+  function trTexto(n) {
+    var p = n.parentNode;
+    if (!p || p.nodeName === 'SCRIPT' || p.nodeName === 'STYLE' || (p.closest && p.closest('[data-notr]'))) return;
+    var v = tr(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v;
+  }
+  function trAttrs(el) {
+    if (el.closest && el.closest('[data-notr]')) return;
+    for (var i = 0; i < ATTRS_TR.length; i++) {
+      var a = el.getAttribute && el.getAttribute(ATTRS_TR[i]);
+      if (a) { var v = tr(a); if (v !== a) el.setAttribute(ATTRS_TR[i], v); }
+    }
+  }
+  function traducir(raiz) {
+    if (!DICC || !raiz) return;
+    if (raiz.nodeType === 3) { trTexto(raiz); return; }
+    if (raiz.nodeType !== 1) return;
+    trAttrs(raiz);
+    var w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT, null), n, lista = [];
+    while ((n = w.nextNode())) lista.push(n);
+    lista.forEach(trTexto);
+    raiz.querySelectorAll('[placeholder],[aria-label],[title],[alt]').forEach(trAttrs);
+  }
+  new MutationObserver(function (muts) {
+    if (!DICC) return;
+    muts.forEach(function (m) {
+      if (m.type === 'childList') m.addedNodes.forEach(traducir);
+      else if (m.type === 'characterData') trTexto(m.target);
+      else if (m.type === 'attributes') trAttrs(m.target);
+    });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS_TR });
+  var precarga = cargarIdioma(idiomaDe('auto'));
+
   /* ---------- utilidades ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function api(metodo, ruta, cuerpo) {
@@ -76,9 +137,10 @@
     if (!p.caducidad) return null;
     return Math.round((new Date(p.caducidad + 'T00:00:00') - new Date(hoyISO() + 'T00:00:00')) / 86400000);
   }
-  var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  var MESES_L = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  function fechaCorta(s) { var p = s.split('-'); return parseInt(p[2], 10) + ' ' + MESES[parseInt(p[1], 10) - 1]; }
+  function loc() { return LANG === 'en' ? 'en-GB' : 'es-ES'; }
+  function fechaCorta(s) { return new Date(s + 'T00:00:00').toLocaleDateString(loc(), { day: 'numeric', month: 'short' }).replace('.', ''); }
+  function nombreMes(d) { var m = d.toLocaleDateString(loc(), { month: 'long' }); return m.charAt(0).toUpperCase() + m.slice(1); }
+  function diaCorto(d) { var w = d.toLocaleDateString(loc(), { weekday: 'short' }).replace('.', ''); return w.charAt(0).toUpperCase() + w.slice(1); }
   function cadInfo(p) {
     var d = dias(p);
     if (d === null) return { txt: 'Sin fecha', cls: 'ok' };
@@ -90,8 +152,8 @@
     if (d <= 30) return { txt: 'En ' + d + ' días', cls: '' };
     return { txt: fechaCorta(p.caducidad), cls: 'ok' };
   }
-  function fmtNum(n) { return (Math.round(n * 1000) / 1000).toString().replace('.', ','); }
-  function eur(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
+  function fmtNum(n) { var s = (Math.round(n * 1000) / 1000).toString(); return LANG === 'en' ? s : s.replace('.', ','); }
+  function eur(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString(loc(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
   var SING = { uds: 'ud', paquetes: 'paquete', bricks: 'brick', botes: 'bote', bolsas: 'bolsa', latas: 'lata', botellas: 'botella', bandejas: 'bandeja', docenas: 'docena' };
   function uni(n, u) { return n === 1 && SING[u] ? SING[u] : u; }
   function cantTxt(p) { return fmtNum(p.cantidad) + ' ' + uni(p.cantidad, p.unidad); }
@@ -193,7 +255,7 @@
   function gastoMes(offset) {
     var d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - offset);
     var k = iso(d).slice(0, 7);
-    return { k: k, mes: MESES_L[d.getMonth()], total: D.tickets.filter(function (t) { return (t.fecha || '').slice(0, 7) === k; }).reduce(function (s, t) { return s + (t.total || 0); }, 0) };
+    return { k: k, mes: nombreMes(d), total: D.tickets.filter(function (t) { return (t.fecha || '').slice(0, 7) === k; }).reduce(function (s, t) { return s + (t.total || 0); }, 0) };
   }
   function estimadoCompra(items) {
     var tot = 0, n = 0;
@@ -331,14 +393,13 @@
         '<button class="bt pri full" data-acc="modoCompra" style="margin-top:10px"' + (D.compra.length ? '' : ' disabled') + '>' + icono('carro', 18) + 'Ir a comprar</button>';
     }
     if (w.k === 'semana') {
-      var DS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
       var h = '<div class="card-cab"><h2>Caducidades de la semana</h2><button class="lnk" data-ir="caducidades">Ver lista</button></div>';
       if (C.caducados.length) h += '<button class="fila tn-rojo" data-ir="caducidades" style="padding:0 14px;margin-bottom:10px"><span class="nom tc">' + C.caducados.length + (C.caducados.length === 1 ? ' producto caducado' : ' productos caducados') + '</span>' + icono('dcha', 18) + '</button>';
       h += '<div class="semana">';
       for (var i = 0; i < 7; i++) {
         var n = D.productos.filter(function (p) { return p.cantidad > 0 && dias(p) === i; }).length;
         var dd = new Date(); dd.setDate(dd.getDate() + i);
-        h += '<button class="dia' + (n ? (i <= 1 ? ' rojo' : ' amar') : '') + '" data-ir="caducidades"><small>' + (i === 0 ? 'Hoy' : DS[dd.getDay()]) + '</small><b>' + n + '</b><small>' + (n === 1 ? 'producto' : 'productos') + '</small></button>';
+        h += '<button class="dia' + (n ? (i <= 1 ? ' rojo' : ' amar') : '') + '" data-ir="caducidades"><small>' + (i === 0 ? 'Hoy' : diaCorto(dd)) + '</small><b>' + n + '</b><small>' + (n === 1 ? 'producto' : 'productos') + '</small></button>';
       }
       return h + '</div>';
     }
@@ -365,7 +426,7 @@
       var act = meses[5], ant = meses[4];
       var dif = ant.total ? Math.round((act.total - ant.total) / ant.total * 100) : null;
       return '<div class="card-cab"><h2>Gasto del mes</h2><button class="lnk" data-ir="estadisticas">Ver más</button></div>' +
-        '<button class="fila" data-ir="estadisticas" style="padding:0;min-height:0;align-items:flex-end;gap:16px"><span class="nom" style="white-space:normal"><span style="font-size:30px;font-weight:800">' + eur(act.total) + '</span><small>' + (dif === null ? 'en ' + act.mes.toLowerCase() : (dif > 0 ? dif + '% más' : Math.abs(dif) + '% menos') + ' que en ' + ant.mes.toLowerCase()) + '</small></span>' +
+        '<button class="fila" data-ir="estadisticas" style="padding:0;min-height:0;align-items:flex-end;gap:16px"><span class="nom" style="white-space:normal"><span style="font-size:30px;font-weight:800">' + eur(act.total) + '</span><small>' + (dif === null ? 'en ' + (LANG === 'en' ? act.mes : act.mes.toLowerCase()) : (dif > 0 ? dif + '% más' : Math.abs(dif) + '% menos') + ' que en ' + (LANG === 'en' ? ant.mes : ant.mes.toLowerCase())) + '</small></span>' +
         '<span class="mini-barras">' + meses.map(function (m, i) { return '<span title="' + m.mes + ': ' + eur(m.total) + '" style="height:' + Math.max(6, Math.round(m.total / max * 64)) + 'px;' + (i === 5 ? 'background:var(--acc)' : '') + '"></span>'; }).join('') + '</span></button>' +
         (D.tickets.length ? '' : '<p class="sub" style="margin:10px 0 0">Se calcula con los tickets que escaneéis o con el importe que pongáis al terminar la compra.</p>');
     }
@@ -540,7 +601,7 @@
       (topT.length ? topT.slice(0, 5).map(function (c) { return '<div class="hist-f"><span>' + esc(c[0]) + '</span><span>' + fmtNum(c[1]) + '</span></div>'; }).join('') : '<p class="sub" style="margin:0">Nada tirado este mes. Bien hecho.</p>') + '</section>';
 
     h += '<section class="card"><div class="card-cab"><h2>Compras registradas</h2><span class="sub">' + D.tickets.length + '</span></div>' + (D.tickets.length ? D.tickets.slice(0, 12).map(function (t) {
-      return '<div class="hist-f"><span><b>' + esc(t.comercio || 'Compra') + '</b> · ' + fechaCorta(t.fecha) + (t.n ? ' · ' + t.n + ' artículos' : '') + '</span><span style="display:flex;align-items:center;gap:6px"><b>' + eur(t.total) + '</b>' + (esAdmin() ? '<button class="x" data-tdel="' + t.id + '" aria-label="Borrar esta compra">' + icono('papelera', 16) + '</button>' : '') + '</span></div>';
+      return '<div class="hist-f"><span><b>' + esc(t.comercio || 'Compra') + '</b> · ' + fechaCorta(t.fecha) + (t.n ? ' · ' + t.n + (t.n === 1 ? ' artículo' : ' artículos') : '') + '</span><span style="display:flex;align-items:center;gap:6px"><b>' + eur(t.total) + '</b>' + (esAdmin() ? '<button class="x" data-tdel="' + t.id + '" aria-label="Borrar esta compra">' + icono('papelera', 16) + '</button>' : '') + '</span></div>';
     }).join('') : '<div class="vacio">Aún no hay compras.</div>') + '</section>';
     return h + '</div>';
   }
@@ -556,6 +617,7 @@
     var h = '<div class="ajustes">';
     h += '<section class="card"><h2>Mi aspecto</h2><span class="sub">Solo te afecta a ti.</span>' +
       '<div class="seg" role="group" aria-label="Tema">' + [['claro', 'Claro', 'sol'], ['oscuro', 'Oscuro', 'luna'], ['auto', 'Automático', 'auto']].map(function (o) { return '<button class="' + (pr.tema === o[0] ? 'on' : '') + '" data-tema="' + o[0] + '">' + icono(o[2], 16) + o[1] + '</button>'; }).join('') + '</div>' +
+      '<b style="font-size:14px">Idioma</b><div class="seg" role="group" aria-label="Idioma">' + [['auto', 'Automático'], ['es', 'Español'], ['en', 'English']].map(function (o) { return '<button class="' + ((pr.idioma || 'auto') === o[0] ? 'on' : '') + '" data-idioma="' + o[0] + '"' + (o[0] !== 'auto' ? ' data-notr="1"' : '') + '>' + o[1] + '</button>'; }).join('') + '</div>' +
       '<b style="font-size:14px">Color de acento</b><div class="acentos">' + [['tomate', '#FF6B47', 'Tomate'], ['menta', '#3CCB86', 'Menta'], ['uva', '#A08CFF', 'Uva'], ['mar', '#5AABFF', 'Mar']].map(function (a) { return '<button class="acento' + (pr.acento === a[0] ? ' on' : '') + '" style="background:' + a[1] + '" data-acento="' + a[0] + '" aria-label="Acento ' + a[2] + '"></button>'; }).join('') + '</div></section>';
 
     h += '<section class="card"><h2>Mis avisos</h2><span class="sub">Llegan a la app de Home Assistant de tu móvil.</span>';
@@ -637,7 +699,7 @@
     h += '<section class="card"><h2>Actividad reciente</h2><div class="hist">' + (D.historial.length ? D.historial.slice(0, 15).map(function (x) {
       var acc = { alta: 'añadió', baja: 'borró', edicion: 'editó', consumo: 'consumió', tirado: 'tiró', ajuste: 'ajustó', compra: 'compró' }[x.accion] || x.accion;
       var t = new Date(x.t);
-      return '<div><span><b>' + esc(x.u) + '</b> ' + acc + ' ' + esc(x.producto) + (x.cant != null && x.accion !== 'alta' && x.accion !== 'edicion' ? ' (' + (x.cant > 0 ? '+' : '') + fmtNum(x.cant) + ')' : '') + '</span><span>' + t.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + ' ' + t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + '</span></div>';
+      return '<div><span><b>' + esc(x.u) + '</b> <span>' + acc + '</span> ' + esc(x.producto) + (x.cant != null && x.accion !== 'alta' && x.accion !== 'edicion' ? ' (' + (x.cant > 0 ? '+' : '') + fmtNum(x.cant) + ')' : '') + '</span><span>' + t.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' ' + t.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }) + '</span></div>';
     }).join('') : '<span class="sub">Todavía no hay movimientos.</span>') + '</div><span class="sub">Frescario ' + esc(D.version || '') + '</span></section>';
     return h + '</div>';
   }
@@ -812,7 +874,7 @@
           { t: 'Escanear otro', s: '', ic: 'codigo', attr: 'data-acc="escanear"' }
         ]);
       } else if (r.datos) {
-        abrirNuevo({ nombre: r.datos.nombre, categoria: r.datos.categoria, imagen: r.datos.imagen, codigo: r.codigo, almacenId: r.datos.categoria === 'Congelados' ? (D.almacenes.find(function (a) { return a.icono === 'congelador'; }) || {}).id : undefined, nota: r.datos.formato ? 'Formato: ' + r.datos.formato : '' });
+        abrirNuevo({ nombre: r.datos.nombre, categoria: r.datos.categoria, imagen: r.datos.imagen, codigo: r.codigo, almacenId: r.datos.categoria === 'Congelados' ? (D.almacenes.find(function (a) { return a.icono === 'congelador'; }) || {}).id : undefined, nota: r.datos.formato ? (LANG === 'en' ? 'Pack size: ' : 'Formato: ') + r.datos.formato : '' });
         toast('Encontrado. Revisa los datos y guarda.');
       } else {
         abrirNuevo({ codigo: r.codigo });
@@ -1003,6 +1065,13 @@
     if (ds.almf) { S.alm = ds.almf; pintar(); return; }
     if (ds.tema) { guardarPrefs({ tema: ds.tema }); return; }
     if (ds.acento) { guardarPrefs({ acento: ds.acento }); return; }
+    if (ds.idioma) {
+      var nuevo = idiomaDe(ds.idioma);
+      D.yo.prefs.idioma = ds.idioma; D.yo.prefs.idiomaReal = nuevo;
+      api('PUT', 'yo/prefs', { idioma: ds.idioma, idiomaReal: nuevo }).catch(fallo);
+      cargarIdioma(nuevo).then(function () { pintar(); });
+      return;
+    }
     if (ds.wshow) { cambiarWidgets(function (w) { w.forEach(function (x) { if (x.k === ds.wshow) x.on = true; }); }); return; }
     if (ds.whide) { cambiarWidgets(function (w) { w.forEach(function (x) { if (x.k === ds.whide) x.on = false; }); }); return; }
     if (ds.wtog) { cambiarWidgets(function (w) { w.forEach(function (x) { if (x.k === ds.wtog) x.on = !x.on; }); }); return; }
@@ -1120,7 +1189,7 @@
       api('POST', 'compra', { nombre: lp.nombre, productoId: lp.id }).then(function (r) { return hecho(r, r.repetido ? 'Ya estaba en la lista' : 'Añadido a la lista'); }).then(refrescarFicha).catch(fallo);
       return;
     }
-    if (acc === 'faltantes') { api('POST', 'compra/faltantes', {}).then(function (r) { return hecho(r, r.anadidos ? 'Añadidos ' + r.anadidos + ' productos a la lista' : 'No falta nada, todo está por encima del mínimo'); }).catch(fallo); return; }
+    if (acc === 'faltantes') { api('POST', 'compra/faltantes', {}).then(function (r) { return hecho(r, r.anadidos ? (r.anadidos === 1 ? 'Añadido 1 producto a la lista' : 'Añadidos ' + r.anadidos + ' productos a la lista') : 'No falta nada, todo está por encima del mínimo'); }).catch(fallo); return; }
     if (acc === 'terminar') {
       var C = calcular();
       var ligados = C.hechos.filter(function (c) { return c.productoId; }).length;
@@ -1223,6 +1292,9 @@
     if (cargando) return cargando;
     cargando = api('GET', 'estado').then(function (d) {
       D = d; S.offline = false; aplicarTema(); guardarCache(); pintarAviso();
+      var quiero = idiomaDe(D.yo.prefs.idioma || 'auto');
+      if (D.yo.prefs.idiomaReal !== quiero) { D.yo.prefs.idiomaReal = quiero; api('PUT', 'yo/prefs', { idiomaReal: quiero }).catch(function () {}); }
+      if (quiero !== LANG) return cargarIdioma(quiero).then(function () { pintar(); if (S.mc) pintarMC(); });
       if (['todo', 'bajo', 'agotado'].indexOf(S.alm) < 0 && !almPorId(S.alm)) S.alm = 'todo';
       pintar();
       if (S.mc) pintarMC();
@@ -1249,5 +1321,5 @@
   setInterval(function () { if (!document.hidden) recargar().catch(function () {}); }, 60000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { vaciarCola(); recargar().catch(function () {}); } });
 
-  recargar().then(function () { escuchar(); vaciarCola(); }).catch(function () {});
+  precarga.then(recargar).then(function () { escuchar(); vaciarCola(); }).catch(function () {});
 })();

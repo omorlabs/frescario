@@ -1,0 +1,751 @@
+{
+ "_info": "Translation of Frescario to English. Keys are the Spanish texts. 'textos' are exact texts, 'patrones' are regular expressions for texts with numbers or names: $1 inserts the captured text as is, %1 translates it too.",
+ "textos": {
+  "Inicio": "Home",
+  "Almacén": "Storage",
+  "Caducidades": "Expiry dates",
+  "Lista de la compra": "Shopping list",
+  "Estadísticas": "Statistics",
+  "Ajustes": "Settings",
+  "Compra": "Shopping",
+  "Más": "More",
+  "Secciones": "Sections",
+  "¿Qué hay en casa?": "What's at home?",
+  "Buenos días": "Good morning",
+  "Buenas tardes": "Good afternoon",
+  "Buenas noches": "Good evening",
+  "Toca un producto para ver y cambiar todo": "Tap an item to see and change everything",
+  "Ordenado por lo que caduca antes": "Sorted by what expires first",
+  "Úsalo primero": "Use it first",
+  "Toca cualquier producto para meterlo en el carro": "Tap any item to put it in the cart",
+  "Gasto, consumo y lo que se tira": "Spending, consumption and waste",
+  "Lo tuyo y lo de toda la casa": "Your settings and the whole home's",
+  "Busca un producto": "Search for an item",
+  "Buscar producto": "Search item",
+  "Buscar": "Search",
+  "Personalizar": "Customise",
+  "Listo": "Done",
+  "Añadir": "Add",
+  "Añadir producto": "Add item",
+  "Escanear código de barras": "Scan barcode",
+  "Tema": "Theme",
+  "Tema claro": "Light theme",
+  "Tema oscuro": "Dark theme",
+  "Tema automático": "Automatic theme",
+  "Claro": "Light",
+  "Oscuro": "Dark",
+  "Automático": "Automatic",
+  "Administrador": "Administrator",
+  "Familia": "Family",
+  "Solo consulta": "Read only",
+  "Por comprar": "To buy",
+  "Caducidades de la semana": "This week's expiry dates",
+  "Se acaba pronto": "Running out soon",
+  "Almacenes": "Storage areas",
+  "Gasto del mes": "Monthly spending",
+  "Resumen de la casa": "Home overview",
+  "Ver todo": "See all",
+  "Ver lista": "See list",
+  "Ver más": "See more",
+  "Ir a comprar": "Go shopping",
+  "Hoy": "Today",
+  "Mañana": "Tomorrow",
+  "Caducado": "Expired",
+  "Caducó ayer": "Expired yesterday",
+  "Sin fecha": "No date",
+  "producto": "item",
+  "productos": "items",
+  "caducan pronto": "expire soon",
+  "bajo mínimo": "below minimum",
+  "según lo que gastáis": "based on your usage",
+  "Nada caduca en los próximos días. Así da gusto.": "Nothing expires in the next few days. Nice!",
+  "La lista está vacía.": "The list is empty.",
+  "La lista está vacía": "The list is empty",
+  "Cuando vayáis consumiendo, Frescario aprende cuánto os dura cada cosa y os avisa aquí antes de que se acabe.": "As you use things up, Frescario learns how long each one lasts and warns you here before it runs out.",
+  "Se calcula con los tickets que escaneéis o con el importe que pongáis al terminar la compra.": "Calculated from the receipts you scan or the amount you enter when you finish shopping.",
+  "Se acaba hoy": "Runs out today",
+  "Bloques ocultos:": "Hidden blocks:",
+  "ninguno, están todos en pantalla": "none, they are all on screen",
+  "Mover antes": "Move back",
+  "Mover después": "Move forward",
+  "Ocultar bloque": "Hide block",
+  "No tienes bloques en el inicio": "You have no blocks on your home screen",
+  "Tu almacén está vacío": "Your storage is empty",
+  "Empieza añadiendo lo que tienes en la nevera, la despensa y el congelador. Lo más rápido es escanear el código de barras o la foto del ticket del súper.": "Start by adding what you have in the fridge, pantry and freezer. The quickest way is to scan barcodes or a photo of your supermarket receipt.",
+  "Escanear código": "Scan barcode",
+  "Escanear ticket": "Scan receipt",
+  "Añadir a mano": "Add manually",
+  "Añadir el primer producto": "Add the first item",
+  "Llevas un mes usando Frescario": "You've been using Frescario for a month",
+  "Frescario es gratis y de código abierto. Si te está ahorrando tiempo y comida, puedes invitarme a un café para seguir mejorándolo.": "Frescario is free and open source. If it's saving you time and food, you can buy me a coffee to keep improving it.",
+  "Invitar a un café": "Buy me a coffee",
+  "No, gracias": "No, thanks",
+  "¡Muchas gracias por el apoyo!": "Thank you so much for your support!",
+  "Todo": "All",
+  "Bajo mínimo": "Below minimum",
+  "Agotados": "Out of stock",
+  "Aquí no hay nada.": "Nothing here.",
+  "Nada con ese nombre.": "Nothing with that name.",
+  "Añadir todo a la lista": "Add all to the list",
+  "Despensa": "Pantry",
+  "Nevera": "Fridge",
+  "Congelador": "Freezer",
+  "Limpieza": "Cleaning",
+  "Botiquín": "First aid",
+  "Bebidas": "Drinks",
+  "Caja": "Box",
+  "Fruta y verdura": "Fruit and vegetables",
+  "Panadería": "Bakery",
+  "Carne": "Meat",
+  "Pescado": "Fish",
+  "Lácteos y huevos": "Dairy and eggs",
+  "Desayuno": "Breakfast",
+  "Pasta, arroz y legumbres": "Pasta, rice and pulses",
+  "Conservas": "Canned food",
+  "Salsas y especias": "Sauces and spices",
+  "Snacks y dulces": "Snacks and sweets",
+  "Congelados": "Frozen food",
+  "Higiene": "Personal care",
+  "Otros": "Other",
+  "ud": "unit",
+  "uds": "units",
+  "paquete": "pack",
+  "paquetes": "packs",
+  "brick": "carton",
+  "bricks": "cartons",
+  "bote": "jar",
+  "botes": "jars",
+  "bolsa": "bag",
+  "bolsas": "bags",
+  "lata": "can",
+  "latas": "cans",
+  "botella": "bottle",
+  "botellas": "bottles",
+  "bandeja": "tray",
+  "bandejas": "trays",
+  "docena": "dozen",
+  "docenas": "dozen",
+  "Caducados": "Expired",
+  "Hoy y mañana": "Today and tomorrow",
+  "Esta semana": "This week",
+  "Este mes": "This month",
+  "Más adelante": "Later on",
+  "No hay fechas de caducidad": "No expiry dates",
+  "Cuando añadas productos con fecha, aquí verás qué gastar primero.": "When you add items with a date, you'll see here what to use first.",
+  "Añadir lo que falta": "Add what's missing",
+  "Terminar compra": "Finish shopping",
+  "Terminar": "Finish",
+  "¿Qué hay que comprar?": "What do you need to buy?",
+  "Cantidad": "Quantity",
+  "Sincronizada con la lista de Home Assistant, así podéis añadir cosas por voz.": "Synced with the Home Assistant list, so you can add things by voice.",
+  "Añade lo que necesites o pulsa \"Añadir lo que falta\" para traer lo que está bajo mínimo.": "Add what you need or tap \"Add what's missing\" to bring in everything below its minimum.",
+  "Modo compra": "Shopping mode",
+  "Salir del modo compra": "Exit shopping mode",
+  "Añadir algo más": "Add something else",
+  "En el carro": "In the cart",
+  "¡Lo tienes todo!": "You've got everything!",
+  "Ya está todo en el carro.": "Everything is already in the cart.",
+  "Sumarlos a su almacén": "Add them to their storage area",
+  "¿Cuánto ha costado?": "How much did it cost?",
+  "¿Dónde?": "Where?",
+  "Opcional": "Optional",
+  "Asistente de voz": "Voice assistant",
+  "En casa": "At home",
+  "Consumir": "Use",
+  "A la lista": "To the list",
+  "Ya en la lista": "Already on the list",
+  "Lo he tirado": "I threw it away",
+  "Precios": "Prices",
+  "Último precio": "Last price",
+  "Más barato": "Cheapest",
+  "Aún no hay precios. Se guardan solos al leer tickets.": "No prices yet. They are saved automatically when you scan receipts.",
+  "Precio": "Price",
+  "Supermercado": "Supermarket",
+  "Guardar": "Save",
+  "Datos del producto": "Item details",
+  "Guardar cambios": "Save changes",
+  "Borrar producto": "Delete item",
+  "Nombre": "Name",
+  "Unidad": "Unit",
+  "Dónde está": "Where it is",
+  "Categoría": "Category",
+  "Caduca el": "Expires on",
+  "Avisar si baja de": "Alert if below",
+  "Fecha rápida": "Quick date",
+  "1 semana": "1 week",
+  "1 mes": "1 month",
+  "6 meses": "6 months",
+  "1 año": "1 year",
+  "3 días": "3 days",
+  "Nota": "Note",
+  "Precio (opcional)": "Price (optional)",
+  "Por ejemplo: Yogur natural": "For example: Plain yogurt",
+  "Nuevo producto": "New item",
+  "Producto nuevo": "New item",
+  "Producto": "Item",
+  "Cancelar": "Cancel",
+  "Cerrar": "Close",
+  "Sin fecha de caducidad": "No expiry date",
+  "Caduca": "Expires",
+  "Está agotado.": "It's out of stock.",
+  "Borrar": "Delete",
+  "Se quita del almacén para siempre. Si solo se ha acabado, mejor deja la cantidad a 0.": "It will be removed from storage for good. If it has just run out, better set the quantity to 0.",
+  "Apunta al código de barras del producto": "Point at the item's barcode",
+  "O escribe el número": "Or type the number",
+  "Número del código de barras": "Barcode number",
+  "Si el producto ya está en casa, podrás sumarlo o consumirlo de un toque. Si es nuevo, se rellena solo con su nombre, foto y categoría.": "If the item is already at home, you can add or use it with one tap. If it's new, its name, photo and category are filled in automatically.",
+  "La cámara no está disponible aquí. Entra en Home Assistant con su dirección segura (https) o escribe el número del código.": "The camera is not available here. Open Home Assistant through its secure (https) address or type the barcode number.",
+  "No se ha podido abrir la cámara. Revisa el permiso de cámara o escribe el número.": "The camera could not be opened. Check the camera permission or type the number.",
+  "Buscando el producto…": "Looking up the item…",
+  "Encontrado. Revisa los datos y guarda.": "Found it. Check the details and save.",
+  "No lo conozco. Ponle nombre y la próxima vez lo reconoceré.": "I don't know this one. Give it a name and I'll recognise it next time.",
+  "Sumar 1": "Add 1",
+  "Lo acabas de comprar": "You just bought it",
+  "Consumir 1": "Use 1",
+  "Lo acabas de gastar": "You just used it",
+  "Ver la ficha": "Open the item",
+  "Cambiar fecha, cantidad o dónde está": "Change date, quantity or location",
+  "Escanear otro": "Scan another",
+  "Encuadra el ticket dentro del marco": "Fit the receipt inside the frame",
+  "Linterna": "Torch",
+  "Hacer la foto": "Take the photo",
+  "Elegir de la galería": "Choose from gallery",
+  "Hacer foto": "Take photo",
+  "Pon el ticket recto, sobre algo oscuro y con buena luz. Si es muy largo, hazlo en varias fotos de arriba abajo (hasta 4).": "Place the receipt straight, on a dark surface and in good light. If it's very long, take several photos from top to bottom (up to 4).",
+  "Leer el ticket": "Read the receipt",
+  "Leyendo el ticket…": "Reading the receipt…",
+  "Esto tarda unos segundos.": "This takes a few seconds.",
+  "No he encontrado artículos": "I couldn't find any items",
+  "Prueba con otra foto más nítida.": "Try again with a sharper photo.",
+  "Probar otra vez": "Try again",
+  "No se ha podido leer": "It couldn't be read",
+  "Reintentar": "Retry",
+  "Hacer otra foto": "Take another photo",
+  "Tienda": "Shop",
+  "Fecha": "Date",
+  "Revisa lo que he leído. Desmarca lo que no quieras guardar. En cada línea: cantidad, precio en euros y dónde va.": "Check what I've read. Untick anything you don't want to save. On each line: quantity, price in euros and where it goes.",
+  "Precio en euros": "Price in euros",
+  "Dónde va": "Where it goes",
+  "Sumar a lo que ya tienes": "Add to what you already have",
+  "Nuevo en": "New in",
+  "Guardar en el almacén": "Save to storage",
+  "Haz una foto al ticket del súper": "Take a photo of your supermarket receipt",
+  "Para ver la cámara aquí mismo, entra en Home Assistant por su dirección segura (https).": "To see the camera right here, open Home Assistant through its secure (https) address.",
+  "No se ha podido abrir la cámara. Revisa el permiso o elige la foto de la galería.": "The camera could not be opened. Check the permission or choose the photo from your gallery.",
+  "La lectura de tickets no está activada todavía.": "Receipt reading is not enabled yet.",
+  "Se activa en la configuración de la app Frescario en Home Assistant.": "Enable it in the Frescario app configuration in Home Assistant.",
+  "Pídeselo al administrador de la casa.": "Ask your home's administrator.",
+  "Escanear ticket del súper": "Scan a supermarket receipt",
+  "Con la cámara en directo, mete toda la compra de golpe": "With the live camera, add your whole shop at once",
+  "Sin activar todavía": "Not enabled yet",
+  "Lo más rápido para un producto": "The quickest way for one item",
+  "Escribe el nombre y la fecha": "Type the name and the date",
+  "Algo a la lista de la compra": "Something to the shopping list",
+  "Qué gastar primero": "What to use first",
+  "Aspecto, avisos y la casa": "Look, notifications and home",
+  "Gasto por mes": "Spending per month",
+  "Escanea los tickets del súper o pon el importe al terminar la compra y aquí verás cuánto gastáis.": "Scan your supermarket receipts or enter the amount when you finish shopping and you'll see here how much you spend.",
+  "Dónde compráis": "Where you shop",
+  "últimos 3 meses": "last 3 months",
+  "Todavía no hay compras registradas.": "No purchases recorded yet.",
+  "Sin indicar": "Not specified",
+  "Lo que más gastáis": "What you use most",
+  "últimos 30 días": "last 30 days",
+  "Usa \"Consumir\" en los productos y aquí verás lo que más se gasta en casa.": "Use \"Use\" on your items and you'll see here what gets used most at home.",
+  "Lo que se tira": "What gets thrown away",
+  "veces": "times",
+  "a la basura": "thrown away",
+  "Nada tirado este mes. Bien hecho.": "Nothing thrown away this month. Well done.",
+  "Compras registradas": "Recorded purchases",
+  "Aún no hay compras.": "No purchases yet.",
+  "Borrar esta compra": "Delete this purchase",
+  "Compra borrada": "Purchase deleted",
+  "Se quita de las estadísticas de gasto. Los productos del almacén no se tocan.": "It will be removed from the spending statistics. Items in storage are not affected.",
+  "Mi aspecto": "My look",
+  "Solo te afecta a ti.": "Only affects you.",
+  "Idioma": "Language",
+  "Color de acento": "Accent colour",
+  "Tomate": "Tomato",
+  "Menta": "Mint",
+  "Uva": "Grape",
+  "Mar": "Sea",
+  "Mis avisos": "My notifications",
+  "Llegan a la app de Home Assistant de tu móvil.": "They arrive in the Home Assistant app on your phone.",
+  "Buscando tus móviles…": "Looking for your phones…",
+  "Ahora mismo no hay conexión con Home Assistant, así que no se pueden configurar los avisos.": "There's no connection to Home Assistant right now, so notifications can't be set up.",
+  "No hay ningún móvil con la app de Home Assistant instalada. Instálala, inicia sesión y vuelve aquí.": "There's no phone with the Home Assistant app installed. Install it, sign in and come back here.",
+  "¿A qué móvil?": "Which phone?",
+  "¿De qué quieres enterarte?": "What do you want to hear about?",
+  "Queda poco": "Running low",
+  "Cuando algo baja de su mínimo": "When something drops below its minimum",
+  "Cuando alguien de casa añade algo": "When someone at home adds something",
+  "Enviarme un aviso de prueba": "Send me a test notification",
+  "Avisos de caducidad": "Expiry notifications",
+  "Avisos de stock bajo": "Low stock notifications",
+  "Avisos de la lista": "List notifications",
+  "Mi inicio": "My home screen",
+  "Activa, ordena y elige el tamaño de cada bloque. En el inicio también puedes pulsar \"Personalizar\".": "Turn on, reorder and choose the size of each block. You can also tap \"Customise\" on the home screen.",
+  "Visible": "Visible",
+  "Oculto": "Hidden",
+  "Subir": "Move up",
+  "Bajar": "Move down",
+  "Avisos de la casa": "Home notifications",
+  "Solo el administrador. Cada persona elige luego si los quiere recibir.": "Administrator only. Each person then chooses whether to receive them.",
+  "Hora del aviso": "Notification time",
+  "Segundo aviso (opcional)": "Second notification (optional)",
+  "Avisar de lo que caduca": "Notify about what expires",
+  "Toda la semana": "The whole week",
+  "Recordar también lo ya caducado": "Also remind about expired items",
+  "Incluir caducados en el aviso": "Include expired items in the notification",
+  "Marcar como \"caduca pronto\"": "Mark as \"expires soon\"",
+  "1 día": "1 day",
+  "Conexión": "Connection",
+  "Conectado": "Connected",
+  "Sin conexión": "Offline",
+  "Lista por voz": "Voice list",
+  "sincronizada": "synced",
+  "pendiente": "pending",
+  "Sin activar": "Not enabled",
+  "Lectura de tickets": "Receipt reading",
+  "Activada": "Enabled",
+  "La lista por voz y la lectura de tickets se activan en la configuración del complemento. En Home Assistant tienes además los sensores de Frescario (caducan hoy, caducan mañana, bajo mínimo y lista de la compra) para usarlos en paneles y automatizaciones.": "The voice list and receipt reading are enabled in the app configuration. Home Assistant also gets Frescario sensors (expiring today, expiring tomorrow, below minimum and shopping list) for dashboards and automations.",
+  "Sincronizar ahora": "Sync now",
+  "Al borrar uno, sus productos pasan a otro.": "When you delete one, its items move to another.",
+  "Nuevo almacén": "New storage area",
+  "Editar almacén": "Edit storage area",
+  "Icono": "Icon",
+  "Color": "Colour",
+  "Por ejemplo: Trastero": "For example: Storage room",
+  "Rojo": "Red",
+  "Amarillo": "Yellow",
+  "Verde": "Green",
+  "Azul": "Blue",
+  "Morado": "Purple",
+  "Gris": "Grey",
+  "Usuarios y permisos": "Users and permissions",
+  "Aparecen aquí la primera vez que abren Frescario desde su Home Assistant.": "They show up here the first time they open Frescario from their Home Assistant.",
+  ": puede añadir, consumir y usar la lista.": ": can add, use items and use the list.",
+  ": solo mira.": ": can only look.",
+  "Categorías y pasillos": "Categories and aisles",
+  "El orden de las categorías es el orden de los pasillos en la lista y en el modo compra. Ponlas como estén en tu súper.": "The order of the categories is the order of the aisles in the list and in shopping mode. Arrange them like your supermarket.",
+  "Nueva categoría": "New category",
+  "Borrar categoría": "Delete category",
+  "Supermercados": "Supermarkets",
+  "Se añaden solos al leer tickets. Sirven para comparar precios.": "They are added automatically when reading receipts. Used to compare prices.",
+  "Todavía ninguno.": "None yet.",
+  "Nuevo supermercado": "New supermarket",
+  "Copia de seguridad": "Backup",
+  "Frescario ya entra en las copias de Home Assistant. Aquí puedes además descargar una copia o restaurarla.": "Frescario is already included in Home Assistant backups. Here you can also download a copy or restore one.",
+  "Descargar copia": "Download backup",
+  "Restaurar copia": "Restore backup",
+  "Restaurar": "Restore",
+  "Se sustituye todo lo que hay ahora en Frescario por lo de la copia. Antes se guarda una copia de lo actual por si acaso.": "Everything currently in Frescario will be replaced by the backup. A copy of the current data is saved first, just in case.",
+  "¿Te gusta Frescario?": "Do you like Frescario?",
+  "Es gratis y de código abierto, y lo seguirá siendo. Si te ahorra tiempo y comida, puedes apoyar su desarrollo.": "It's free and open source, and it will stay that way. If it saves you time and food, you can support its development.",
+  "Invítame a un café": "Buy me a coffee",
+  "Ver el proyecto y proponer mejoras": "See the project and suggest improvements",
+  "Actividad reciente": "Recent activity",
+  "Todavía no hay movimientos.": "No activity yet.",
+  "añadió": "added",
+  "borró": "deleted",
+  "editó": "edited",
+  "consumió": "used",
+  "tiró": "threw away",
+  "ajustó": "adjusted",
+  "compró": "bought",
+  "Está vacío, se borra sin más.": "It's empty, it will just be deleted.",
+  "Guardado": "Saved",
+  "Hora guardada": "Time saved",
+  "Permisos guardados": "Permissions saved",
+  "Cambios guardados": "Changes saved",
+  "Producto añadido": "Item added",
+  "Producto borrado": "Item deleted",
+  "Precio guardado": "Price saved",
+  "Consumido, apuntado": "Used, noted",
+  "Apuntado como desperdicio": "Recorded as waste",
+  "Añadido a la lista": "Added to the list",
+  "Ya estaba en la lista": "It was already on the list",
+  "Añadido": "Added",
+  "Guardado, se enviará al volver la cobertura": "Saved, it will be sent when you're back online",
+  "Categoría añadida": "Category added",
+  "Categoría borrada": "Category deleted",
+  "Supermercado añadido": "Supermarket added",
+  "Almacén guardado": "Storage area saved",
+  "Almacén borrado": "Storage area deleted",
+  "Sincronizado": "Synced",
+  "Aviso enviado. Mira tu móvil.": "Notification sent. Check your phone.",
+  "Copia restaurada": "Backup restored",
+  "Compra terminada. ¡A colocarlo todo!": "Shopping finished. Time to put it all away!",
+  "No falta nada, todo está por encima del mínimo": "Nothing is missing, everything is above its minimum",
+  "Sin conexión. Mostrando lo último que se cargó.": "Offline. Showing the last data loaded.",
+  "Algo ha fallado.": "Something went wrong.",
+  "Algo ha fallado. Vuelve a intentarlo.": "Something went wrong. Please try again.",
+  "No se ha podido completar.": "It couldn't be completed.",
+  "No se ha podido descargar.": "It couldn't be downloaded.",
+  "No se ha podido abrir la foto.": "The photo couldn't be opened.",
+  "Abre Frescario desde Home Assistant.": "Open Frescario from Home Assistant.",
+  "Abre Frescario desde el menú lateral de Home Assistant.": "Open Frescario from the Home Assistant sidebar.",
+  "No se ha podido cargar Frescario. Vuelve a intentarlo en unos segundos.": "Frescario couldn't be loaded. Try again in a few seconds.",
+  "Tu usuario solo puede consultar.": "Your user can only view.",
+  "Solo el administrador puede hacer esto.": "Only the administrator can do this.",
+  "Elige primero en qué móvil quieres los avisos.": "First choose which phone should get the notifications.",
+  "Ahora mismo no hay conexión con Home Assistant.": "There's no connection to Home Assistant right now.",
+  "Home Assistant no ha podido enviar el aviso a ese móvil.": "Home Assistant couldn't send the notification to that phone.",
+  "Ponle un nombre al producto.": "Give the item a name.",
+  "El nombre no puede quedar vacío.": "The name can't be empty.",
+  "Ese producto ya no existe.": "That item no longer exists.",
+  "Pon un precio válido.": "Enter a valid price.",
+  "Código no válido.": "Invalid code.",
+  "La lectura de tickets no está activada. Pídeselo al administrador de la casa.": "Receipt reading is not enabled. Ask your home's administrator.",
+  "No me ha llegado bien la foto. Prueba otra vez.": "The photo didn't come through properly. Please try again.",
+  "No se pudo leer el ticket.": "The receipt couldn't be read.",
+  "La clave de lectura de tickets no es válida.": "The receipt reading key is not valid.",
+  "El servicio de lectura de tickets no responde. Prueba en un rato.": "The receipt reading service isn't responding. Try again later.",
+  "No he podido leer bien el ticket. Prueba con una foto más nítida y recta.": "I couldn't read the receipt properly. Try a sharper, straighter photo.",
+  "Escribe qué hay que comprar.": "Type what you need to buy.",
+  "Ese producto ya no está en la lista.": "That item is no longer on the list.",
+  "Ponle un nombre al almacén.": "Give the storage area a name.",
+  "Ese almacén ya no existe.": "That storage area no longer exists.",
+  "Tiene que quedar al menos un almacén.": "There must be at least one storage area.",
+  "Escribe el nombre de la categoría.": "Type the category name.",
+  "La categoría Otros no se puede borrar.": "The Other category can't be deleted.",
+  "Escribe el nombre del supermercado.": "Type the supermarket name.",
+  "Ese usuario no existe.": "That user doesn't exist.",
+  "Permiso no válido.": "Invalid permission.",
+  "Tiene que quedar al menos un administrador.": "There must be at least one administrator.",
+  "Ese archivo no es una copia de Frescario.": "That file is not a Frescario backup.",
+  "El archivo es demasiado grande.": "The file is too large.",
+  "No encontrado": "Not found",
+  "Cargando Frescario…": "Loading Frescario…",
+  "Formato": "Pack size",
+  "Añadido 1 producto a la lista": "1 item added to the list",
+  "1 artículo": "1 item",
+  "0,00": "0.00"
+ },
+ "patrones": [
+  [
+   "(Buenos días|Buenas tardes|Buenas noches), (.+)",
+   "%1, $2"
+  ],
+  [
+   "Caduca: (.+)",
+   "Expires: %1"
+  ],
+  [
+   "En (\\d+) días",
+   "In $1 days"
+  ],
+  [
+   "(\\d+) días",
+   "$1 days"
+  ],
+  [
+   "([\\d.,]+) (ud|uds|kg|g|L|ml|paquete|paquetes|brick|bricks|bote|botes|bolsa|bolsas|lata|latas|botella|botellas|bandeja|bandejas|docena|docenas)",
+   "$1 %2"
+  ],
+  [
+   "x(\\d+)",
+   "x$1"
+  ],
+  [
+   "(\\d+) por coger · (\\d+) en el carro",
+   "$1 to pick up · $2 in the cart"
+  ],
+  [
+   "(\\d+) pendientes · (\\d+) en el carro",
+   "$1 pending · $2 in the cart"
+  ],
+  [
+   "(\\d+) pendientes",
+   "$1 pending"
+  ],
+  [
+   "(\\d+) productos · (\\d+) en el carro · unos (.+) por comprar",
+   "$1 items · $2 in the cart · about $3 left to buy"
+  ],
+  [
+   "(\\d+) productos · (\\d+) en el carro",
+   "$1 items · $2 in the cart"
+  ],
+  [
+   "(\\d+) de ellos ya están en el almacén",
+   "$1 of them are already in storage"
+  ],
+  [
+   "(\\d+) producto caducado",
+   "$1 expired item"
+  ],
+  [
+   "(\\d+) productos caducados",
+   "$1 expired items"
+  ],
+  [
+   "(\\d+) producto no tiene fecha de caducidad\\.",
+   "$1 item has no expiry date."
+  ],
+  [
+   "(\\d+) productos no tienen fecha de caducidad\\.",
+   "$1 items have no expiry date."
+  ],
+  [
+   "(\\d+) productos",
+   "$1 items"
+  ],
+  [
+   "(\\d+) producto",
+   "$1 item"
+  ],
+  [
+   "(\\d+) artículos?",
+   "$1 items"
+  ],
+  [
+   "Añadir lo que falta \\((\\d+)\\)",
+   "Add what's missing ($1)"
+  ],
+  [
+   "Añadidos (\\d+) productos a la lista",
+   "$1 items added to the list"
+  ],
+  [
+   "Se quitan de la lista los (\\d+) productos que están en el carro\\.",
+   "The $1 items in the cart will be removed from the list."
+  ],
+  [
+   "Sus (\\d+) productos pasarán a otro almacén\\. No se pierde nada\\.",
+   "Its $1 items will move to another storage area. Nothing is lost."
+  ],
+  [
+   "Los productos de \\\"(.+)\\\" pasarán a \\\"Otros\\\"\\.",
+   "Items in \"%1\" will move to \"Other\"."
+  ],
+  [
+   "Leer el ticket \\((\\d+) partes\\)",
+   "Read the receipt ($1 parts)"
+  ],
+  [
+   "Parte (\\d+): encuadra el trozo siguiente del ticket",
+   "Part $1: frame the next section of the receipt"
+  ],
+  [
+   "Esto tarda unos segundos, son (\\d+) partes\\.",
+   "This takes a few seconds, there are $1 parts."
+  ],
+  [
+   "Parte (\\d+) del ticket",
+   "Receipt part $1"
+  ],
+  [
+   "Quitar la parte (\\d+)",
+   "Remove part $1"
+  ],
+  [
+   "Queda para 1 día",
+   "Enough for 1 day"
+  ],
+  [
+   "Queda para (\\d+) días",
+   "Enough for $1 days"
+  ],
+  [
+   "Al ritmo de las últimas semanas, te dura unos 1 día\\.",
+   "At your recent pace, it will last about 1 day."
+  ],
+  [
+   "Al ritmo de las últimas semanas, te dura unos (\\d+) días\\.",
+   "At your recent pace, it will last about $1 days."
+  ],
+  [
+   "Consumido\\. Quedan (.+)",
+   "Used. %1 left"
+  ],
+  [
+   "Sumado\\. Ahora hay (.+)",
+   "Added. Now there are %1"
+  ],
+  [
+   "Borrado\\. Los productos están ahora en (.+)",
+   "Deleted. The items are now in %1"
+  ],
+  [
+   "Listo: (\\d+) nuevos, (\\d+) sumados y (\\d+) quitados de la lista",
+   "Done: $1 new, $2 added and $3 removed from the list"
+  ],
+  [
+   "Listo: (\\d+) nuevos, (\\d+) sumados",
+   "Done: $1 new, $2 added"
+  ],
+  [
+   "Queda poco (.+)\\. Puedes añadirlo a la lista\\.",
+   "Running low on $1. You can add it to the list."
+  ],
+  [
+   "Sin conexión\\. 1 cambio se guardará al volver la cobertura\\.",
+   "Offline. 1 change will be saved when you're back online."
+  ],
+  [
+   "Sin conexión\\. (\\d+) cambios se guardarán al volver la cobertura\\.",
+   "Offline. $1 changes will be saved when you're back online."
+  ],
+  [
+   "Cada día a las ([\\d:]+) y a las ([\\d:]+): lo que caduca hoy, mañana y en los próximos (\\d+) días",
+   "Every day at $1 and $2: what expires today, tomorrow and in the next $3 days"
+  ],
+  [
+   "Cada día a las ([\\d:]+) y a las ([\\d:]+): lo que caduca hoy, mañana",
+   "Every day at $1 and $2: what expires today and tomorrow"
+  ],
+  [
+   "Cada día a las ([\\d:]+): lo que caduca hoy, mañana y en los próximos (\\d+) días",
+   "Every day at $1: what expires today, tomorrow and in the next $2 days"
+  ],
+  [
+   "Cada día a las ([\\d:]+): lo que caduca hoy, mañana",
+   "Every day at $1: what expires today and tomorrow"
+  ],
+  [
+   "Hasta dentro de (\\d+) días",
+   "Up to $1 days ahead"
+  ],
+  [
+   "Aviso por debajo de (.+)",
+   "Alert below %1"
+  ],
+  [
+   "Total (.+)",
+   "Total $1"
+  ],
+  [
+   "Unos (.+) en total",
+   "About $1 in total"
+  ],
+  [
+   "último precio (.+)",
+   "last price $1"
+  ],
+  [
+   "(.+ €) este mes",
+   "$1 this month"
+  ],
+  [
+   "(\\d+)% más que en (.+)",
+   "$1% more than in $2"
+  ],
+  [
+   "(\\d+)% menos que en (.+)",
+   "$1% less than in $2"
+  ],
+  [
+   "en (\\S+)",
+   "in $1"
+  ],
+  [
+   "Añadir \\\"(.+)\\\"",
+   "Add \"$1\""
+  ],
+  [
+   "Añadir (.+) a la lista",
+   "Add $1 to the list"
+  ],
+  [
+   "Quitar (.+) de la lista",
+   "Remove $1 from the list"
+  ],
+  [
+   "Quitar ([\\d.,]+)",
+   "Remove $1"
+  ],
+  [
+   "Añadir ([\\d.,]+)",
+   "Add $1"
+  ],
+  [
+   "Consumir ([\\d.,]+)",
+   "Use $1"
+  ],
+  [
+   "Quitar (.+)",
+   "Remove $1"
+  ],
+  [
+   "Incluir (.+)",
+   "Include $1"
+  ],
+  [
+   "Nuevo en (.+)",
+   "New in %1"
+  ],
+  [
+   "Código (.+)",
+   "Code $1"
+  ],
+  [
+   "Acento (.+)",
+   "Accent %1"
+  ],
+  [
+   "Avisos en (.+)",
+   "Notifications on $1"
+  ],
+  [
+   "Permisos de (.+)",
+   "Permissions for $1"
+  ],
+  [
+   "Tamaño de (.+)",
+   "Size of %1"
+  ],
+  [
+   "Tamaño (S|M|L|XL)",
+   "Size $1"
+  ],
+  [
+   "Ocultar (.+)",
+   "Hide %1"
+  ],
+  [
+   "Mostrar (.+)",
+   "Show %1"
+  ],
+  [
+   "Subir (.+)",
+   "Move %1 up"
+  ],
+  [
+   "Bajar (.+)",
+   "Move %1 down"
+  ],
+  [
+   "Editar (.+)",
+   "Edit %1"
+  ],
+  [
+   "Borrar (.+)",
+   "Delete %1"
+  ],
+  [
+   "Frescario (\\d+\\.\\d+\\.\\d+)",
+   "Frescario $1"
+  ],
+  [
+   "(.+): ([\\d.,]+ €)",
+   "%1: $2"
+  ],
+  [
+   "\\+ (.+)",
+   "+ %1"
+  ],
+  [
+   "· (.+)",
+   "· %1"
+  ],
+  [
+   "(.+) ·",
+   "%1 ·"
+  ],
+  [
+   "(.+?) · (.+)",
+   "%1 · %2"
+  ]
+ ]
+}

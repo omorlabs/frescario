@@ -7,7 +7,6 @@ const TOKEN = process.env.SUPERVISOR_TOKEN || process.env.FRESCARIO_HA_TOKEN || 
 const CORE = process.env.FRESCARIO_HA_URL || 'http://supervisor/core/api';
 const SUP = process.env.FRESCARIO_SUP_URL || 'http://supervisor';
 
-const SING = { uds: 'ud', paquetes: 'paquete', bricks: 'brick', botes: 'bote', bolsas: 'bolsa', latas: 'lata', botellas: 'botella', bandejas: 'bandeja', docenas: 'docena' };
 let ctx = null;            // { db, guardar, emitir, opciones, registrarEvento }
 let estado = { conectado: false, ultimoError: '', zona: 'Europe/Madrid', panel: '', lista: '', listaOk: false, ultimaSync: null };
 
@@ -92,25 +91,48 @@ async function notificar(dispositivos, titulo, mensaje, extra) {
   return ok;
 }
 
-function unir(nombres) {
+const TXT = {
+  es: {
+    y: ' y ', yaCad: 'Ya caducado: ', hoy1: 'Hoy caduca ', hoyN: 'Hoy caducan ', man1: 'Mañana caduca ', manN: 'Mañana caducan ',
+    enDias: (d) => 'En ' + d + ' días: ', nada: 'Ahora mismo no caduca nada en los próximos días.',
+    tCad: 'Frescario: caducidades', tPoco: 'Frescario: queda poco', tLista: 'Frescario: lista de la compra',
+    poco: (n, c, u) => 'Queda poco de ' + n + ' (' + c + ' ' + u + '). ¿Lo añades a la lista?',
+    lista: (q, cosas) => q + (q.indexOf(' y ') > 0 ? ' han añadido ' : ' ha añadido ') + cosas + '.',
+    uni: { uds: ['ud', 'uds'], kg: ['kg', 'kg'], g: ['g', 'g'], L: ['L', 'L'], ml: ['ml', 'ml'], paquetes: ['paquete', 'paquetes'], bricks: ['brick', 'bricks'], botes: ['bote', 'botes'], bolsas: ['bolsa', 'bolsas'], latas: ['lata', 'latas'], botellas: ['botella', 'botellas'], bandejas: ['bandeja', 'bandejas'], docenas: ['docena', 'docenas'] },
+    sep: ','
+  },
+  en: {
+    y: ' and ', yaCad: 'Already expired: ', hoy1: 'Expires today: ', hoyN: 'Expire today: ', man1: 'Expires tomorrow: ', manN: 'Expire tomorrow: ',
+    enDias: (d) => 'In ' + d + ' days: ', nada: 'Nothing expires in the next few days.',
+    tCad: 'Frescario: expiry dates', tPoco: 'Frescario: running low', tLista: 'Frescario: shopping list',
+    poco: (n, c, u) => 'Running low on ' + n + ' (' + c + ' ' + u + '). Add it to the list?',
+    lista: (q, cosas) => q + ' added ' + cosas + '.',
+    uni: { uds: ['unit', 'units'], kg: ['kg', 'kg'], g: ['g', 'g'], L: ['L', 'L'], ml: ['ml', 'ml'], paquetes: ['pack', 'packs'], bricks: ['carton', 'cartons'], botes: ['jar', 'jars'], bolsas: ['bag', 'bags'], latas: ['can', 'cans'], botellas: ['bottle', 'bottles'], bandejas: ['tray', 'trays'], docenas: ['dozen', 'dozen'] },
+    sep: '.'
+  }
+};
+const idiomaU = (u) => (u && u.prefs && TXT[u.prefs.idiomaReal]) ? u.prefs.idiomaReal : 'es';
+function unir(nombres, lang) {
+  const y = TXT[lang || 'es'].y;
   if (nombres.length <= 1) return nombres.join('');
-  return nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1];
+  return nombres.slice(0, -1).join(', ') + y + nombres[nombres.length - 1];
 }
 
-function textoCaducidades(db, hoy) {
+function textoCaducidades(db, hoy, lang) {
+  const L = TXT[lang || 'es'];
   const aj = db.ajustes.avisos || {};
   const antel = Math.max(1, Math.min(7, aj.antelacion || 1));
   const con = db.productos.filter((p) => p.caducidad && p.cantidad > 0);
   const lineas = [];
   const cad = con.filter((p) => diasHasta(p.caducidad, hoy) < 0).map((p) => p.nombre);
-  if (aj.incluirCaducados !== false && cad.length) lineas.push('Ya caducado: ' + unir(cad) + '.');
+  if (aj.incluirCaducados !== false && cad.length) lineas.push(L.yaCad + unir(cad, lang) + '.');
   const h = con.filter((p) => diasHasta(p.caducidad, hoy) === 0).map((p) => p.nombre);
-  if (h.length) lineas.push((h.length === 1 ? 'Hoy caduca ' : 'Hoy caducan ') + unir(h) + '.');
+  if (h.length) lineas.push((h.length === 1 ? L.hoy1 : L.hoyN) + unir(h, lang) + '.');
   const m = con.filter((p) => diasHasta(p.caducidad, hoy) === 1).map((p) => p.nombre);
-  if (m.length) lineas.push((m.length === 1 ? 'Mañana caduca ' : 'Mañana caducan ') + unir(m) + '.');
+  if (m.length) lineas.push((m.length === 1 ? L.man1 : L.manN) + unir(m, lang) + '.');
   for (let d = 2; d <= antel; d++) {
     const x = con.filter((p) => diasHasta(p.caducidad, hoy) === d).map((p) => p.nombre);
-    if (x.length) lineas.push('En ' + d + ' días: ' + unir(x) + '.');
+    if (x.length) lineas.push(L.enDias(d) + unir(x, lang) + '.');
   }
   return lineas;
 }
@@ -118,14 +140,15 @@ function textoCaducidades(db, hoy) {
 async function avisoCaducidades(usuarios, forzar) {
   const db = ctx.db();
   const hoy = hoyLocal();
-  const lineas = textoCaducidades(db, hoy);
-  if (!lineas.length && !forzar) return 0;
-  const msg = lineas.length ? lineas.join('\n') : 'Ahora mismo no caduca nada en los próximos días.';
   let n = 0;
   for (const u of usuarios) {
     const av = (u.prefs && u.prefs.avisos) || {};
     if (!forzar && !av.caducidad) continue;
-    n += await notificar(av.dispositivos || [], 'Frescario: caducidades', msg, { tag: 'frescario-caducidades' });
+    const lang = idiomaU(u);
+    const lineas = textoCaducidades(db, hoy, lang);
+    if (!lineas.length && !forzar) continue;
+    const msg = lineas.length ? lineas.join('\n') : TXT[lang].nada;
+    n += await notificar(av.dispositivos || [], TXT[lang].tCad, msg, { tag: 'frescario-caducidades' });
   }
   return n;
 }
@@ -158,7 +181,10 @@ function eventoBajoMinimo(p, autorId) {
   for (const u of Object.values(db.usuarios)) {
     const av = (u.prefs && u.prefs.avisos) || {};
     if (!av.bajoMinimo || !(av.dispositivos || []).length) continue;
-    notificar(av.dispositivos, 'Frescario: queda poco', 'Queda poco de ' + p.nombre + ' (' + String(p.cantidad).replace('.', ',') + ' ' + (p.cantidad === 1 && SING[p.unidad] ? SING[p.unidad] : p.unidad) + '). ¿Lo añades a la lista?', { tag: 'frescario-minimo-' + p.id }).catch(() => {});
+    const L = TXT[idiomaU(u)];
+    const par = L.uni[p.unidad] || [p.unidad, p.unidad];
+    const cant = L.sep === ',' ? String(p.cantidad).replace('.', ',') : String(p.cantidad);
+    notificar(av.dispositivos, L.tPoco, L.poco(p.nombre, cant, p.cantidad === 1 ? par[0] : par[1]), { tag: 'frescario-minimo-' + p.id }).catch(() => {});
   }
 }
 function eventoLista(nombre, autor) {
@@ -174,8 +200,8 @@ function eventoLista(nombre, autor) {
     clearTimeout(cur.t);
     cur.t = setTimeout(() => {
       pendientesLista.delete(k);
-      const quien = unir(Array.from(cur.autores));
-      notificar(av.dispositivos, 'Frescario: lista de la compra', quien + ' ha añadido ' + unir(cur.nombres) + '.', { tag: 'frescario-lista' }).catch(() => {});
+      const lang = idiomaU(u);
+      notificar(av.dispositivos, TXT[lang].tLista, TXT[lang].lista(unir(Array.from(cur.autores), lang), unir(cur.nombres, lang)), { tag: 'frescario-lista' }).catch(() => {});
     }, 90000);
     pendientesLista.set(k, cur);
   }

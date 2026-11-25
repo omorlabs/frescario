@@ -42,7 +42,7 @@ Frescario is a Home Assistant app (formerly called add-on) that keeps track of e
 - **Real Home Assistant integration.** Sensors such as `sensor.frescario_caducan_hoy` or `sensor.frescario_bajo_minimo` for your dashboards and automations.
 - **Responsive.** Designed for phone, tablet and desktop.
 
-The interface is currently in **Spanish**. An English translation is planned and contributions are very welcome.
+Available in **English** and **Spanish**: each person picks their language in Settings. Want Frescario in your language? Translations are a single file, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 <p align="center">
   <img src="docs/img/modo-compra.png" width="240" alt="Shopping mode">

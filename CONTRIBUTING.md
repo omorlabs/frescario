@@ -9,6 +9,19 @@ Thanks for wanting to help. Contributions in English or Spanish are welcome.
 - **Translate:** the interface is in Spanish. Help with English and other languages is especially welcome.
 - **Code:** fix a bug or build a feature and open a pull request.
 
+## Translating Frescario
+
+Spanish is the base language. Each translation is one file in `frescario/app/public/i18n/`, for example `en.json`:
+
+- `textos`: exact texts. The key is the Spanish text and the value is the translation.
+- `patrones`: regular expressions for texts with numbers or names. In the translation, `$1` inserts the captured text as it is and `%1` translates it too.
+
+To add a new language:
+
+1. Copy `en.json` to `xx.json` (for example `fr.json`) and translate the values.
+2. In `frescario/app/public/app.js`, add the code to the `IDIOMAS` list and a button for it in the language selector (search for `data-idioma`).
+3. If you want phone notifications in that language, add it to `TXT` in `frescario/app/ha.js`.
+
 ## Project layout
 
 ```

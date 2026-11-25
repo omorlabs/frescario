@@ -1,5 +1,11 @@
 # Cambios
 
+## 1.3.0
+
+- Frescario en inglés. Cada persona elige su idioma en Ajustes (automático, español o English).
+- Los avisos al móvil llegan en el idioma de cada persona.
+- Fechas, meses y números en el formato de cada idioma.
+
 ## 1.2.0
 
 - Apoyo al proyecto: botón para invitar a un café en Ajustes y un aviso único en el inicio al mes de uso, que se puede descartar.
