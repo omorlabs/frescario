@@ -107,4 +107,4 @@ Frescario es una app de Home Assistant que lleva la cuenta de todo lo que hay en
 
 ## License
 
-[MIT](LICENSE) © 2026 Oscar Morente
+[MIT](LICENSE) © 2026 omorlabs

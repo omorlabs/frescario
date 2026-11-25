@@ -130,7 +130,7 @@ function usuarioDe(req) {
   let id = req.get('x-remote-user-id');
   let usuario = req.get('x-remote-user-name');
   let nombre = req.get('x-remote-user-display-name');
-  if (DEV && !id) { id = req.get('x-dev-user') || 'dev-admin'; usuario = id; nombre = id === 'dev-admin' ? 'Oscar' : id.charAt(0).toUpperCase() + id.slice(1); }
+  if (DEV && !id) { id = req.get('x-dev-user') || 'dev-admin'; usuario = id; nombre = id === 'dev-admin' ? 'Admin' : id.charAt(0).toUpperCase() + id.slice(1); }
   if (!id) return null;
   id = txt(id, 64);
   let u = db.usuarios[id];
