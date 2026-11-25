@@ -1,5 +1,9 @@
 # Cambios
 
+## 1.3.1
+
+- Preparación para instalar con imágenes ya compiladas (más rápido y fiable).
+
 ## 1.3.0
 
 - Frescario en inglés. Cada persona elige su idioma en Ajustes (automático, español o English).
