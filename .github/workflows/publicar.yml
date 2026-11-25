@@ -30,7 +30,8 @@ jobs:
 
       - name: Leer la versión
         id: version
-        run: echo "version=$(grep -E '^version:' frescario/config.yaml | sed -E 's/version: *"?([^"]+)"?/\1/')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(grep -E '^version:' frescario/config.yaml | sed -E 's/version: *"?([^"]+)"?/\1/')" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
