@@ -1,5 +1,9 @@
 # Cambios
 
+## 1.3.2
+
+- Instalación y actualizaciones con imágenes ya compiladas: tardan segundos en vez de minutos.
+
 ## 1.3.1
 
 - Preparación para instalar con imágenes ya compiladas (más rápido y fiable).
