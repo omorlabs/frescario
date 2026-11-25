@@ -1,0 +1,21 @@
+name: Feature request / Propuesta de mejora
+description: An idea to make Frescario better / Una idea para mejorar Frescario
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: What would you like to do? / ¿Qué te gustaría poder hacer?
+      description: Explain the need, not only the solution / Explica la necesidad, no solo la solución
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How do you imagine it? / ¿Cómo te lo imaginas?
+  - type: checkboxes
+    id: ayuda
+    attributes:
+      label: Help / Ayuda
+      options:
+        - label: I would like to help build it / Me gustaría ayudar a hacerlo
