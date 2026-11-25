@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -200,7 +200,7 @@ function ritmoConsumo(p) {
   return total / diasObs;
 }
 
-function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs }; }
+function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs, alta: u.alta }; }
 
 const PISTAS = [
   [/(leche|yogur|queso|huevo|mantequilla|nata|kefir)/, 'Lácteos y huevos'], [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido)/, 'Carne'],
@@ -263,6 +263,7 @@ api.put('/yo/prefs', (req, res) => {
   const p = req.u.prefs || {};
   if (TEMAS.includes(b.tema)) p.tema = b.tema;
   if (ACENTOS.includes(b.acento)) p.acento = b.acento;
+  if (b.kofi === 'si' || b.kofi === 'no') p.kofi = b.kofi;
   if (Array.isArray(b.widgets)) {
     const vistos = new Set(); const w = [];
     for (const x of b.widgets) {

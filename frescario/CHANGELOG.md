@@ -1,5 +1,10 @@
 # Cambios
 
+## 1.2.0
+
+- Apoyo al proyecto: botón para invitar a un café en Ajustes y un aviso único en el inicio al mes de uso, que se puede descartar.
+- Licencia MIT: Frescario pasa a ser código abierto.
+
 ## 1.1.0
 
 - Escáner de tickets en directo: la cámara se abre dentro de la app con marco, linterna y disparo.

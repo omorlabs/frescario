@@ -397,3 +397,10 @@ svg.ic{display:block;flex-shrink:0}
 .tk-parte button{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center}
 .atajos-alm{display:flex;gap:10px;flex-wrap:wrap}
 @media (max-width:820px){.hoja.ancha{width:100%}.visor-tk{height:52vh}.atajos-alm{flex-wrap:nowrap;overflow-x:auto;margin:0 -18px;padding:0 18px;scrollbar-width:none}.atajos-alm .bt{flex-shrink:0}}
+
+/* donativos */
+a.bt{text-decoration:none}
+.kofi-card{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border:2px solid var(--t-rojo-bg)}
+.kofi-txt{flex:1 1 280px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted);line-height:1.45}
+.kofi-txt b{color:var(--text);font-size:16px}
+.kofi-acc{display:flex;gap:10px;flex-wrap:wrap}

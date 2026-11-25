@@ -49,3 +49,7 @@ Cada uno tiene el número de productos y, en sus atributos, la lista de nombres.
 ## Los datos
 
 Todo se guarda dentro del complemento y entra en las copias de seguridad normales de Home Assistant. Desde Ajustes también puedes descargar o restaurar una copia.
+
+## Apoya el proyecto
+
+Frescario es gratis y de código abierto. Si te resulta útil, puedes invitarme a un café en https://ko-fi.com/frescario

@@ -10,6 +10,7 @@
   var $toast = document.getElementById('toast');
   var capaCerrar = null;
   var COLA_KEY = 'frescario-cola', CACHE_KEY = 'frescario-estado';
+  var KOFI = 'https://ko-fi.com/frescario';
 
   /* ---------- utilidades ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -290,6 +291,11 @@
     var ws = D.yo.prefs.widgets || [];
     var vis = ws.filter(function (w) { return w.on && WN[w.k]; });
     var h = '';
+    var diasUso = D.yo.alta ? (Date.now() - Date.parse(D.yo.alta)) / 86400000 : 0;
+    if (!S.edit && !D.yo.prefs.kofi && diasUso >= 30) {
+      h += '<section class="card kofi-card"><span class="ico tn-rojo"><span class="tc">' + icono('taza', 24) + '</span></span><div class="kofi-txt"><b>Llevas un mes usando Frescario</b><span>Frescario es gratis y de código abierto. Si te está ahorrando tiempo y comida, puedes invitarme a un café para seguir mejorándolo.</span></div>' +
+        '<div class="kofi-acc"><a class="bt pri" href="' + KOFI + '" target="_blank" rel="noopener" data-kofi="si">Invitar a un café</a><button class="bt" data-kofi="no">No, gracias</button></div></section>';
+    }
     if (S.edit) {
       var oc = ws.filter(function (w) { return !w.on && WN[w.k]; });
       h += '<div class="ocultos">Bloques ocultos:' + (oc.length ? oc.map(function (w) { return '<button class="chip-add" data-wshow="' + w.k + '">+ ' + WN[w.k] + '</button>'; }).join('') : ' <span style="font-weight:500">ninguno, están todos en pantalla</span>') + '</div>';
@@ -625,6 +631,9 @@
       h += '<section class="card"><h2>Copia de seguridad</h2><span class="sub">Frescario ya entra en las copias de Home Assistant. Aquí puedes además descargar una copia o restaurarla.</span>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="bt" data-acc="descargarCopia">' + icono('descarga', 18) + 'Descargar copia</button><label class="bt" style="cursor:pointer">' + icono('subir', 18) + 'Restaurar copia<input type="file" accept="application/json,.json" id="f-restaurar" class="oculto"></label></div></section>';
     }
+    h += '<section class="card"><h2>¿Te gusta Frescario?</h2><span class="sub">Es gratis y de código abierto, y lo seguirá siendo. Si te ahorra tiempo y comida, puedes apoyar su desarrollo.</span>' +
+      '<a class="bt pri" href="' + KOFI + '" target="_blank" rel="noopener" data-kofi="si">' + icono('taza', 18) + 'Invítame a un café</a>' +
+      '<a class="bt" href="https://github.com/oskilla25/frescario" target="_blank" rel="noopener">' + icono('hoja', 18) + 'Ver el proyecto y proponer mejoras</a></section>';
     h += '<section class="card"><h2>Actividad reciente</h2><div class="hist">' + (D.historial.length ? D.historial.slice(0, 15).map(function (x) {
       var acc = { alta: 'añadió', baja: 'borró', edicion: 'editó', consumo: 'consumió', tirado: 'tiró', ajuste: 'ajustó', compra: 'compró' }[x.accion] || x.accion;
       var t = new Date(x.t);
@@ -1148,6 +1157,15 @@
     }
   });
 
+  document.addEventListener('click', function (ev) {
+    var k = ev.target.closest('[data-kofi]');
+    if (!k || !D) return;
+    if (D.yo.prefs.kofi !== 'si' || k.dataset.kofi === 'no') {
+      D.yo.prefs.kofi = k.dataset.kofi;
+      api('PUT', 'yo/prefs', { kofi: k.dataset.kofi }).catch(function () {});
+      if (k.dataset.kofi === 'si') setTimeout(function () { toast('¡Muchas gracias por el apoyo!'); pintar(); }, 400); else pintar();
+    }
+  });
   document.addEventListener('submit', function (ev) {
     var f = ev.target;
     if (f.id === 'f-compra') {

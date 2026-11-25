@@ -78,6 +78,8 @@ Bug reports, ideas, translations and pull requests are welcome. Read [CONTRIBUTI
 
 Frescario is free and will stay free. If it saves you time and food, you can support its development.
 
+<a href="https://ko-fi.com/frescario"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support Frescario on Ko-fi"></a>
+
 ---
 
 <a name="castellano"></a>
@@ -101,7 +103,7 @@ Frescario es una app de Home Assistant que lleva la cuenta de todo lo que hay en
 2. Busca **Frescario** en la tienda y pulsa **Instalar**.
 3. Activa **Iniciar al arrancar** y **Mostrar en la barra lateral**, y pulsa **Iniciar**.
 
-¿Quieres colaborar? Mira [CONTRIBUTING.md](CONTRIBUTING.md).
+¿Quieres colaborar? Mira [CONTRIBUTING.md](CONTRIBUTING.md). Y si Frescario te ahorra tiempo y comida, puedes [invitarme a un café en Ko-fi](https://ko-fi.com/frescario).
 
 ## License
 
