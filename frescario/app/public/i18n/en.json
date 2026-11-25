@@ -420,7 +420,9 @@
   "Formato": "Pack size",
   "Añadido 1 producto a la lista": "1 item added to the list",
   "1 artículo": "1 item",
-  "0,00": "0.00"
+  "0,00": "0.00",
+  "La lectura de tickets no está activada todavía. Se activa en la configuración de la app Frescario en Home Assistant.": "Receipt reading is not enabled yet. Enable it in the Frescario app configuration in Home Assistant.",
+  "La lectura de tickets no está activada todavía. Pídeselo al administrador de la casa.": "Receipt reading is not enabled yet. Ask your home's administrator."
  },
  "patrones": [
   [

@@ -1,5 +1,10 @@
 # Cambios
 
+## 1.3.3
+
+- La categoría automática de la lista de la compra entiende también nombres en inglés.
+- Corregida una traducción en el escáner de tickets.
+
 ## 1.3.2
 
 - Instalación y actualizaciones con imágenes ya compiladas: tardan segundos en vez de minutos.

@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
 
-const VERSION = '1.3.2';
+const VERSION = '1.3.3';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -203,13 +203,20 @@ function ritmoConsumo(p) {
 function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs, alta: u.alta }; }
 
 const PISTAS = [
-  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir)/, 'Lácteos y huevos'], [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido)/, 'Carne'],
-  [/(merluza|salmon|atun|bacalao|gamba|pescado|sardina|calamar|mejillon)/, 'Pescado'], [/(manzana|platano|naranja|pera|tomate|lechuga|cebolla|patata|zanahoria|pimiento|fruta|verdura|ajo|limon|fresa|uva|aguacate|espinaca|calabacin|pepino)/, 'Fruta y verdura'],
-  [/(pan |baguette|bolleria|croissant|tostada|pan$|^pan)/, 'Panadería'], [/(lata|conserva|bote)/, 'Conservas'], [/(congelad|helado|pizza)/, 'Congelados'],
-  [/(agua|zumo|refresco|cerveza|vino|cola|bebida)/, 'Bebidas'], [/(arroz|pasta|macarron|espagueti|lenteja|garbanzo|alubia|harina|fideo)/, 'Pasta, arroz y legumbres'],
-  [/(cafe|cacao|cereal|galleta| te |infusion|mermelada|azucar)/, 'Desayuno'], [/(aceite|vinagre| sal |salsa|especia|ketchup|mayonesa|oregano|pimienta)/, 'Salsas y especias'],
-  [/(chocolate|patatas fritas|snack|chuche|dulce|frutos secos)/, 'Snacks y dulces'], [/(detergente|lejia|friegasuelos|suavizante|lavavajillas|bayeta|estropajo|papel de cocina|bolsas de basura)/, 'Limpieza'],
-  [/(champu|gel|pasta de dientes|desodorante|papel higienico|compresa|maquinilla|crema)/, 'Higiene']
+  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir|milk|yogurt|yoghurt|cheese|egg|butter|cream)/, 'Lácteos y huevos'],
+  [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido|chicken|beef|pork|meat|ham|bacon|sausage|turkey|mince)/, 'Carne'],
+  [/(merluza|salmon|atun|bacalao|gamba|pescado|sardina|calamar|mejillon|fish|tuna|cod|prawn|shrimp|hake)/, 'Pescado'],
+  [/(manzana|platano|naranja|pera|tomate|lechuga|cebolla|patata|zanahoria|pimiento|fruta|verdura|ajo|limon|fresa|uva|aguacate|espinaca|calabacin|pepino|apple|banana|orange|pear|tomato|lettuce|onion|potato|carrot|pepper|fruit|vegetable|garlic|lemon|strawberr|grape|avocado|spinach|courgette|zucchini|cucumber)/, 'Fruta y verdura'],
+  [/(pan |baguette|bolleria|croissant|tostada|pan$|^ pan|bread|bagel|muffin)/, 'Panadería'],
+  [/(lata|conserva|bote|canned|tinned|chopped tomatoes)/, 'Conservas'],
+  [/(congelad|helado|pizza|frozen|ice cream)/, 'Congelados'],
+  [/(agua|zumo|refresco|cerveza|vino|cola|bebida|water|juice|soda|beer|wine|drink)/, 'Bebidas'],
+  [/(arroz|pasta|macarron|espagueti|lenteja|garbanzo|alubia|harina|fideo|rice|spaghetti|noodle|lentil|chickpea|bean|flour)/, 'Pasta, arroz y legumbres'],
+  [/(cafe|cacao|cereal|galleta| te |infusion|mermelada|azucar|coffee|cocoa|cookie|biscuit| tea |jam|sugar|oat)/, 'Desayuno'],
+  [/(aceite|vinagre| sal |salsa|especia|ketchup|mayonesa|oregano|pimienta| oil|vinegar| salt |sauce|spice|mayo)/, 'Salsas y especias'],
+  [/(chocolate|patatas fritas|snack|chuche|dulce|frutos secos|crisps|chips|candy|sweets|nuts)/, 'Snacks y dulces'],
+  [/(detergente|lejia|friegasuelos|suavizante|lavavajillas|bayeta|estropajo|papel de cocina|bolsas de basura|detergent|bleach|dishwasher|softener|sponge|kitchen paper|kitchen roll|bin bags)/, 'Limpieza'],
+  [/(champu|gel|pasta de dientes|desodorante|papel higienico|compresa|maquinilla|crema|shampoo|toothpaste|deodorant|toilet paper|razor|soap)/, 'Higiene']
 ];
 function adivinarCategoria(nombre) {
   const n = ' ' + norm(nombre) + ' ';
@@ -237,7 +244,7 @@ api.get('/estado', (req, res) => {
     productos: db.productos, compra: db.compra, ritmo,
     tickets: db.tickets.slice(0, 120).map((t) => ({ id: t.id, fecha: t.fecha, comercio: t.comercio, total: t.total, n: (t.articulos || []).length, por: t.por })),
     historial: db.historial.slice(0, 600),
-    ha: { disponible: ha.disponible(), tickets: !!String(leerOpciones().gemini_api_key || '').trim(), lista: ha.estado().lista }
+    ha: { disponible: ha.disponible(), tickets: !!String(leerOpciones().gemini_api_key || process.env.FRESCARIO_GEMINI_KEY || '').trim(), lista: ha.estado().lista }
   };
   if (req.u.rol === 'admin') {
     out.usuarios = Object.values(db.usuarios).map((u) => ({ id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, ultimo: u.ultimo }));
