@@ -10,13 +10,13 @@
 </p>
 
 <p align="center">
-  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Foskilla25%2Ffrescario"><img src="https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg" alt="Add repository to my Home Assistant"></a>
+  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fomorlabs%2Ffrescario"><img src="https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg" alt="Add repository to my Home Assistant"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Home%20Assistant-App-41BDF5?logo=home-assistant&logoColor=white" alt="Home Assistant App">
   <img src="https://img.shields.io/badge/arch-amd64%20%7C%20aarch64-blue" alt="Architectures">
-  <img src="https://img.shields.io/github/license/oskilla25/frescario" alt="License">
+  <img src="https://img.shields.io/github/license/omorlabs/frescario" alt="License">
 </p>
 
 <p align="center">
@@ -52,7 +52,7 @@ Available in **English** and **Spanish**: each person picks their language in Se
 
 ## Installation
 
-1. Click the **Add repository** button above, or in Home Assistant go to **Settings → Apps → App store → ⋮ → Repositories** and add `https://github.com/oskilla25/frescario`.
+1. Click the **Add repository** button above, or in Home Assistant go to **Settings → Apps → App store → ⋮ → Repositories** and add `https://github.com/omorlabs/frescario`.
 2. Find **Frescario** in the store and click **Install**.
 3. Turn on **Start on boot** and **Show in sidebar**, then **Start**.
 4. Open Frescario from the sidebar. The first person to open it becomes the administrator.
@@ -99,7 +99,7 @@ Frescario es una app de Home Assistant que lleva la cuenta de todo lo que hay en
 
 ### Instalación
 
-1. Pulsa el botón **Add repository** de arriba, o en Home Assistant ve a **Ajustes → Apps → Tienda de apps → ⋮ → Repositorios** y añade `https://github.com/oskilla25/frescario`.
+1. Pulsa el botón **Add repository** de arriba, o en Home Assistant ve a **Ajustes → Apps → Tienda de apps → ⋮ → Repositorios** y añade `https://github.com/omorlabs/frescario`.
 2. Busca **Frescario** en la tienda y pulsa **Instalar**.
 3. Activa **Iniciar al arrancar** y **Mostrar en la barra lateral**, y pulsa **Iniciar**.
 

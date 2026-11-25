@@ -1,9 +1,9 @@
 name: Frescario
-version: "1.3.3"
+version: "1.4.0"
 slug: frescario
 description: Gestión de la despensa, la nevera, el congelador y la lista de la compra de casa
-url: https://github.com/oskilla25/frescario
-image: "ghcr.io/oskilla25/{arch}-frescario"
+url: https://github.com/omorlabs/frescario
+image: "ghcr.io/omorlabs/{arch}-frescario"
 arch:
   - amd64
   - aarch64

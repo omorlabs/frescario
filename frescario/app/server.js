@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
 
-const VERSION = '1.3.3';
+const VERSION = '1.4.0';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';

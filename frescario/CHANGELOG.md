@@ -1,5 +1,9 @@
 # Cambios
 
+## 1.4.0
+
+- El proyecto pasa a github.com/omorlabs/frescario.
+
 ## 1.3.3
 
 - La categoría automática de la lista de la compra entiende también nombres en inglés.

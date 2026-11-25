@@ -695,7 +695,7 @@
     }
     h += '<section class="card"><h2>¿Te gusta Frescario?</h2><span class="sub">Es gratis y de código abierto, y lo seguirá siendo. Si te ahorra tiempo y comida, puedes apoyar su desarrollo.</span>' +
       '<a class="bt pri" href="' + KOFI + '" target="_blank" rel="noopener" data-kofi="si">' + icono('taza', 18) + 'Invítame a un café</a>' +
-      '<a class="bt" href="https://github.com/oskilla25/frescario" target="_blank" rel="noopener">' + icono('hoja', 18) + 'Ver el proyecto y proponer mejoras</a></section>';
+      '<a class="bt" href="https://github.com/omorlabs/frescario" target="_blank" rel="noopener">' + icono('hoja', 18) + 'Ver el proyecto y proponer mejoras</a></section>';
     h += '<section class="card"><h2>Actividad reciente</h2><div class="hist">' + (D.historial.length ? D.historial.slice(0, 15).map(function (x) {
       var acc = { alta: 'añadió', baja: 'borró', edicion: 'editó', consumo: 'consumió', tirado: 'tiró', ajuste: 'ajustó', compra: 'compró' }[x.accion] || x.accion;
       var t = new Date(x.t);
