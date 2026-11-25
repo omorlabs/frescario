@@ -3,6 +3,7 @@
  * Frescario - conexión con Home Assistant
  * Avisos al móvil, sensores y sincronización con una lista de tareas de HA (voz).
  */
+const idiomas = require('./idiomas');
 const TOKEN = process.env.SUPERVISOR_TOKEN || process.env.FRESCARIO_HA_TOKEN || '';
 const CORE = process.env.FRESCARIO_HA_URL || 'http://supervisor/core/api';
 const SUP = process.env.FRESCARIO_SUP_URL || 'http://supervisor';
@@ -91,35 +92,46 @@ async function notificar(dispositivos, titulo, mensaje, extra) {
   return ok;
 }
 
-const TXT = {
-  es: {
-    y: ' y ', yaCad: 'Ya caducado: ', hoy1: 'Hoy caduca ', hoyN: 'Hoy caducan ', man1: 'Mañana caduca ', manN: 'Mañana caducan ',
-    enDias: (d) => 'En ' + d + ' días: ', nada: 'Ahora mismo no caduca nada en los próximos días.',
-    tCad: 'Frescario: caducidades', tPoco: 'Frescario: queda poco', tLista: 'Frescario: lista de la compra',
-    poco: (n, c, u) => 'Queda poco de ' + n + ' (' + c + ' ' + u + '). ¿Lo añades a la lista?',
-    lista: (q, cosas) => q + (q.indexOf(' y ') > 0 ? ' han añadido ' : ' ha añadido ') + cosas + '.',
-    uni: { uds: ['ud', 'uds'], kg: ['kg', 'kg'], g: ['g', 'g'], L: ['L', 'L'], ml: ['ml', 'ml'], paquetes: ['paquete', 'paquetes'], bricks: ['brick', 'bricks'], botes: ['bote', 'botes'], bolsas: ['bolsa', 'bolsas'], latas: ['lata', 'latas'], botellas: ['botella', 'botellas'], bandejas: ['bandeja', 'bandejas'], docenas: ['docena', 'docenas'] },
-    sep: ','
-  },
-  en: {
-    y: ' and ', yaCad: 'Already expired: ', hoy1: 'Expires today: ', hoyN: 'Expire today: ', man1: 'Expires tomorrow: ', manN: 'Expire tomorrow: ',
-    enDias: (d) => 'In ' + d + ' days: ', nada: 'Nothing expires in the next few days.',
-    tCad: 'Frescario: expiry dates', tPoco: 'Frescario: running low', tLista: 'Frescario: shopping list',
-    poco: (n, c, u) => 'Running low on ' + n + ' (' + c + ' ' + u + '). Add it to the list?',
-    lista: (q, cosas) => q + ' added ' + cosas + '.',
-    uni: { uds: ['unit', 'units'], kg: ['kg', 'kg'], g: ['g', 'g'], L: ['L', 'L'], ml: ['ml', 'ml'], paquetes: ['pack', 'packs'], bricks: ['carton', 'cartons'], botes: ['jar', 'jars'], bolsas: ['bag', 'bags'], latas: ['can', 'cans'], botellas: ['bottle', 'bottles'], bandejas: ['tray', 'trays'], docenas: ['dozen', 'dozen'] },
-    sep: '.'
-  }
+/* Textos de los avisos. El castellano va aquí; el resto de idiomas sale del
+   apartado "avisos" de su archivo public/i18n/<código>.json. */
+const ES = {
+  y: ' y ', yaCad: 'Ya caducado: ', hoy1: 'Hoy caduca ', hoyN: 'Hoy caducan ', man1: 'Mañana caduca ', manN: 'Mañana caducan ',
+  enDias: 'En {d} días: ', nada: 'Ahora mismo no caduca nada en los próximos días.',
+  tCad: 'Frescario: caducidades', tPoco: 'Frescario: queda poco', tLista: 'Frescario: lista de la compra',
+  poco: 'Queda poco de {n} ({c} {u}). ¿Lo añades a la lista?',
+  listaUno: '{quien} ha añadido {cosas}.', listaVarios: '{quien} han añadido {cosas}.',
+  uni: { uds: ['ud', 'uds'], kg: ['kg', 'kg'], g: ['g', 'g'], L: ['L', 'L'], ml: ['ml', 'ml'], paquetes: ['paquete', 'paquetes'], bricks: ['brick', 'bricks'], botes: ['bote', 'botes'], bolsas: ['bolsa', 'bolsas'], latas: ['lata', 'latas'], botellas: ['botella', 'botellas'], bandejas: ['bandeja', 'bandejas'], docenas: ['docena', 'docenas'] }
 };
-const idiomaU = (u) => (u && u.prefs && TXT[u.prefs.idiomaReal]) ? u.prefs.idiomaReal : 'es';
+const TXT = {};
+function textosAviso(lang) {
+  if (TXT[lang]) return TXT[lang];
+  if (lang === 'es' || !idiomas.existe(lang)) return (TXT.es = TXT.es || ES);
+  /* lo que falte en un idioma se coge del inglés y, si tampoco está, del castellano */
+  const base = lang === 'en' ? ES : textosAviso('en');
+  const propio = idiomas.avisos(lang) || {};
+  const t = {};
+  for (const k of Object.keys(ES)) {
+    if (k === 'uni') continue;
+    t[k] = typeof propio[k] === 'string' ? propio[k] : base[k];
+  }
+  t.uni = Object.assign({}, base.uni);
+  if (propio.uni && typeof propio.uni === 'object') {
+    for (const [k, v] of Object.entries(propio.uni)) if (Array.isArray(v) && v.length === 2 && v.every((x) => typeof x === 'string')) t.uni[k] = v;
+  }
+  return (TXT[lang] = t);
+}
+function rellenar(plantilla, datos) {
+  return String(plantilla).replace(/\{(\w+)\}/g, (m, k) => (Object.prototype.hasOwnProperty.call(datos, k) ? String(datos[k]) : m));
+}
+const idiomaU = (u) => (u && u.prefs && idiomas.existe(u.prefs.idiomaReal)) ? u.prefs.idiomaReal : 'es';
 function unir(nombres, lang) {
-  const y = TXT[lang || 'es'].y;
+  const y = textosAviso(lang || 'es').y;
   if (nombres.length <= 1) return nombres.join('');
   return nombres.slice(0, -1).join(', ') + y + nombres[nombres.length - 1];
 }
 
 function textoCaducidades(db, hoy, lang) {
-  const L = TXT[lang || 'es'];
+  const L = textosAviso(lang || 'es');
   const aj = db.ajustes.avisos || {};
   const antel = Math.max(1, Math.min(7, aj.antelacion || 1));
   const con = db.productos.filter((p) => p.caducidad && p.cantidad > 0);
@@ -132,7 +144,7 @@ function textoCaducidades(db, hoy, lang) {
   if (m.length) lineas.push((m.length === 1 ? L.man1 : L.manN) + unir(m, lang) + '.');
   for (let d = 2; d <= antel; d++) {
     const x = con.filter((p) => diasHasta(p.caducidad, hoy) === d).map((p) => p.nombre);
-    if (x.length) lineas.push(L.enDias(d) + unir(x, lang) + '.');
+    if (x.length) lineas.push(rellenar(L.enDias, { d }) + unir(x, lang) + '.');
   }
   return lineas;
 }
@@ -147,8 +159,8 @@ async function avisoCaducidades(usuarios, forzar) {
     const lang = idiomaU(u);
     const lineas = textoCaducidades(db, hoy, lang);
     if (!lineas.length && !forzar) continue;
-    const msg = lineas.length ? lineas.join('\n') : TXT[lang].nada;
-    n += await notificar(av.dispositivos || [], TXT[lang].tCad, msg, { tag: 'frescario-caducidades' });
+    const msg = lineas.length ? lineas.join('\n') : textosAviso(lang).nada;
+    n += await notificar(av.dispositivos || [], textosAviso(lang).tCad, msg, { tag: 'frescario-caducidades' });
   }
   return n;
 }
@@ -181,10 +193,11 @@ function eventoBajoMinimo(p, autorId) {
   for (const u of Object.values(db.usuarios)) {
     const av = (u.prefs && u.prefs.avisos) || {};
     if (!av.bajoMinimo || !(av.dispositivos || []).length) continue;
-    const L = TXT[idiomaU(u)];
+    const lang = idiomaU(u);
+    const L = textosAviso(lang);
     const par = L.uni[p.unidad] || [p.unidad, p.unidad];
-    const cant = L.sep === ',' ? String(p.cantidad).replace('.', ',') : String(p.cantidad);
-    notificar(av.dispositivos, L.tPoco, L.poco(p.nombre, cant, p.cantidad === 1 ? par[0] : par[1]), { tag: 'frescario-minimo-' + p.id }).catch(() => {});
+    const cant = idiomas.info(lang).decimal === ',' ? String(p.cantidad).replace('.', ',') : String(p.cantidad);
+    notificar(av.dispositivos, L.tPoco, rellenar(L.poco, { n: p.nombre, c: cant, u: p.cantidad === 1 ? par[0] : par[1] }), { tag: 'frescario-minimo-' + p.id }).catch(() => {});
   }
 }
 function eventoLista(nombre, autor) {
@@ -201,7 +214,9 @@ function eventoLista(nombre, autor) {
     cur.t = setTimeout(() => {
       pendientesLista.delete(k);
       const lang = idiomaU(u);
-      notificar(av.dispositivos, TXT[lang].tLista, TXT[lang].lista(unir(Array.from(cur.autores), lang), unir(cur.nombres, lang)), { tag: 'frescario-lista' }).catch(() => {});
+      const L = textosAviso(lang);
+      const autores = Array.from(cur.autores);
+      notificar(av.dispositivos, L.tLista, rellenar(autores.length > 1 ? L.listaVarios : L.listaUno, { quien: unir(autores, lang), cosas: unir(cur.nombres, lang) }), { tag: 'frescario-lista' }).catch(() => {});
     }, 90000);
     pendientesLista.set(k, cur);
   }
@@ -278,6 +293,7 @@ async function syncLista() {
       const cid = Object.keys(map).find((x) => map[x] === i.uid);
       const c = cid && db.compra.find((x) => x.id === cid);
       if (c) {
+        if (i.hecho && ctx.compraDirecta && ctx.compraDirecta()) { ctx.comprar(c); cambios = true; continue; }
         if (i.hecho && !c.hecho) { c.hecho = true; cambios = true; }
         if (!i.hecho && c.hecho) { c.hecho = false; cambios = true; }
       } else if (!enlazados.has(i.uid) && !i.hecho) {

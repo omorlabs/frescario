@@ -11,16 +11,21 @@ Thanks for wanting to help. Contributions in English or Spanish are welcome.
 
 ## Translating Frescario
 
-Spanish is the base language. Each translation is one file in `frescario/app/public/i18n/`, for example `en.json`:
+Spanish is the base language. Every other language is **one single file** in `frescario/app/public/i18n/`, for example `en.json`. To add a language:
 
-- `textos`: exact texts. The key is the Spanish text and the value is the translation.
-- `patrones`: regular expressions for texts with numbers or names. In the translation, `$1` inserts the captured text as it is and `%1` translates it too.
+1. Copy `en.json` to `<code>.json`, using the two-letter language code (for example `fr.json`, `de.json`, `ca.json`).
+2. Fill in the top fields:
+   - `nombre`: the language name in its own language, as it will appear in the selector (for example `Français`).
+   - `locale`: date and number format (for example `fr-FR`).
+   - `decimal`: the decimal separator, `","` or `"."`.
+   - `mesMayuscula`: `true` if month names are capitalised in the middle of a sentence (German), `false` if not (French, Italian...).
+3. Translate the values, never the keys. The keys are the Spanish originals.
+   - `textos`: exact texts.
+   - `patrones`: regular expressions for texts with numbers or names. In the translation, `$1` inserts the captured text as it is and `%1` translates it too.
+   - `avisos`: the phone notifications. Words in `{braces}` are filled in by the app, keep them as they are. `uni` holds the units in singular and plural.
+4. Run the app (see below). The new language appears on its own in **Settings → Language**, and phone notifications use it too. Anything you leave untranslated falls back to English.
 
-To add a new language:
-
-1. Copy `en.json` to `xx.json` (for example `fr.json`) and translate the values.
-2. In `frescario/app/public/app.js`, add the code to the `IDIOMAS` list and a button for it in the language selector (search for `data-idioma`).
-3. If you want phone notifications in that language, add it to `TXT` in `frescario/app/ha.js`.
+You don't need to touch any code. One language per pull request, please.
 
 ## Project layout
 

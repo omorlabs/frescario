@@ -19,6 +19,8 @@ gemini_api_key: tu_clave
 
 - **administradores**: nombres de usuario de Home Assistant que serán administradores. Si lo dejas vacío, la primera persona que entre lo será.
 - **lista_ha**: lista de tareas de Home Assistant que se sincroniza con la lista de la compra de Frescario. Sirve para añadir cosas por voz con tu asistente. Déjalo vacío si no la quieres.
+
+En la lista de la compra, al tachar un producto pasa al momento a su almacén y sale de la lista, también si lo tachas desde Home Assistant. Si te equivocas, pulsa "Deshacer" o tócalo en "Ya en el almacén". Si prefieres que lo tachado espere en el carro hasta pulsar "Terminar compra", el administrador puede cambiarlo en Ajustes, apartado Lista de la compra.
 - **gemini_api_key**: clave de Google Gemini para leer las fotos de los tickets del súper. Sin ella, todo lo demás funciona igual.
 
 ## Permisos

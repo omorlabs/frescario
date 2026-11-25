@@ -1,5 +1,9 @@
 {
- "_info": "Translation of Frescario to English. Keys are the Spanish texts. 'textos' are exact texts, 'patrones' are regular expressions for texts with numbers or names: $1 inserts the captured text as is, %1 translates it too.",
+ "_info": "Translation of Frescario to English. To add a language, copy this file to <code>.json (for example fr.json) and translate the values, never the keys (keys are the Spanish originals). 'textos' are exact texts. 'patrones' are regular expressions for texts with numbers or names: $1 inserts the captured text as is, %1 translates it too. 'avisos' are the phone notifications: words in {braces} are filled in by the app, keep them. Restart the app and the language appears in the selector.",
+ "nombre": "English",
+ "locale": "en-GB",
+ "decimal": ".",
+ "mesMayuscula": true,
  "textos": {
   "Inicio": "Home",
   "Almacén": "Storage",
@@ -422,9 +426,36 @@
   "1 artículo": "1 item",
   "0,00": "0.00",
   "La lectura de tickets no está activada todavía. Se activa en la configuración de la app Frescario en Home Assistant.": "Receipt reading is not enabled yet. Enable it in the Frescario app configuration in Home Assistant.",
-  "La lectura de tickets no está activada todavía. Pídeselo al administrador de la casa.": "Receipt reading is not enabled yet. Ask your home's administrator."
+  "La lectura de tickets no está activada todavía. Pídeselo al administrador de la casa.": "Receipt reading is not enabled yet. Ask your home's administrator.",
+  "Toca lo que vayas cogiendo y pasa solo al almacén": "Tap what you pick up and it goes straight into storage",
+  "Ya en el almacén": "Already in storage",
+  "Toca uno para devolverlo a la lista": "Tap one to put it back on the list",
+  "Guardando…": "Saving…",
+  "Deshacer": "Undo",
+  "Ya no se puede deshacer.": "It can't be undone any more.",
+  "Al tachar, meterlo en el almacén": "When ticked, put it in storage",
+  "Lo que tachas sale de la lista y se suma a su almacén al momento": "Whatever you tick leaves the list and is added to its storage straight away",
+  "Lo tachado se queda en el carro hasta pulsar \"Terminar compra\"": "Ticked items stay in the cart until you press \"Finish shopping\"",
+  "Meter en el almacén al tachar": "Put in storage when ticked",
+  "Has metido 1 producto en el almacén. Si quieres, apunta cuánto ha costado para tus estadísticas.": "You've put 1 item in storage. If you like, note what it cost for your statistics."
  },
  "patrones": [
+  [
+   "(\\d+) por coger · (\\d+) ya en casa",
+   "$1 to pick up · $2 already home"
+  ],
+  [
+   "(\\d+) pendientes · (\\d+) ya en casa",
+   "$1 pending · $2 already home"
+  ],
+  [
+   "(\\d+) productos · (\\d+) ya en casa · unos (.+) por comprar",
+   "$1 items · $2 already home · about $3 left to buy"
+  ],
+  [
+   "(\\d+) productos · (\\d+) ya en casa",
+   "$1 items · $2 already home"
+  ],
   [
    "(Buenos días|Buenas tardes|Buenas noches), (.+)",
    "%1, $2"
@@ -748,6 +779,112 @@
   [
    "(.+?) · (.+)",
    "%1 · %2"
+  ],
+  [
+   "Has metido (\\d+) productos en el almacén\\. Si quieres, apunta cuánto ha costado para tus estadísticas\\.",
+   "You've put $1 items in storage. If you like, note what it cost for your statistics."
+  ],
+  [
+   "En (Despensa|Nevera|Congelador)",
+   "In the %1"
+  ],
+  [
+   "En (.+)",
+   "In $1"
+  ],
+  [
+   "(.+) ya está en el almacén",
+   "$1 is now in storage"
+  ],
+  [
+   "(.+) ya está en (Despensa|Nevera|Congelador)",
+   "$1 is now in the %2"
+  ],
+  [
+   "(.+) ya está en (.+)",
+   "$1 is now in $2"
+  ],
+  [
+   "(.+): se guarda cuando vuelva la conexión",
+   "$1: it'll be saved when you're back online"
+  ],
+  [
+   "(.+) vuelve a la lista",
+   "$1 is back on the list"
+  ],
+  [
+   "Devolver (.+) a la lista",
+   "Put $1 back on the list"
   ]
- ]
+ ],
+ "avisos": {
+  "y": " and ",
+  "yaCad": "Already expired: ",
+  "hoy1": "Expires today: ",
+  "hoyN": "Expire today: ",
+  "man1": "Expires tomorrow: ",
+  "manN": "Expire tomorrow: ",
+  "enDias": "In {d} days: ",
+  "nada": "Nothing expires in the next few days.",
+  "tCad": "Frescario: expiry dates",
+  "tPoco": "Frescario: running low",
+  "tLista": "Frescario: shopping list",
+  "poco": "Running low on {n} ({c} {u}). Add it to the list?",
+  "listaUno": "{quien} added {cosas}.",
+  "listaVarios": "{quien} added {cosas}.",
+  "uni": {
+   "uds": [
+    "unit",
+    "units"
+   ],
+   "kg": [
+    "kg",
+    "kg"
+   ],
+   "g": [
+    "g",
+    "g"
+   ],
+   "L": [
+    "L",
+    "L"
+   ],
+   "ml": [
+    "ml",
+    "ml"
+   ],
+   "paquetes": [
+    "pack",
+    "packs"
+   ],
+   "bricks": [
+    "carton",
+    "cartons"
+   ],
+   "botes": [
+    "jar",
+    "jars"
+   ],
+   "bolsas": [
+    "bag",
+    "bags"
+   ],
+   "latas": [
+    "can",
+    "cans"
+   ],
+   "botellas": [
+    "bottle",
+    "bottles"
+   ],
+   "bandejas": [
+    "tray",
+    "trays"
+   ],
+   "docenas": [
+    "dozen",
+    "dozen"
+   ]
+  }
+ }
 }

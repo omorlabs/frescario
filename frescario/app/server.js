@@ -10,8 +10,9 @@ const path = require('path');
 const crypto = require('crypto');
 const ha = require('./ha');
 const ext = require('./externos');
+const idiomas = require('./idiomas');
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -51,7 +52,7 @@ const avisosPorDefecto = () => ({ dispositivos: [], caducidad: true, bajoMinimo:
 function datosIniciales() {
   return {
     version: 2, creado: ahora(),
-    ajustes: { diasAviso: 3, avisos: { hora: '09:00', hora2: '', antelacion: 1, incluirCaducados: true } },
+    ajustes: { diasAviso: 3, compraDirecta: true, avisos: { hora: '09:00', hora2: '', antelacion: 1, incluirCaducados: true } },
     almacenes: [
       { id: nuevoId(), nombre: 'Despensa', icono: 'despensa', color: 'azul', orden: 0 },
       { id: nuevoId(), nombre: 'Nevera', icono: 'nevera', color: 'verde', orden: 1 },
@@ -69,6 +70,8 @@ function migrar() {
   const base = datosIniciales();
   for (const k of Object.keys(base)) if (db[k] === undefined) db[k] = base[k];
   if (!db.ajustes.avisos) db.ajustes.avisos = base.ajustes.avisos;
+  if (db.ajustes.compraDirecta === undefined) db.ajustes.compraDirecta = true;
+  if (!Array.isArray(db.carro)) db.carro = [];
   for (const u of Object.values(db.usuarios)) {
     u.prefs = u.prefs || {};
     if (!u.prefs.avisos) u.prefs.avisos = avisosPorDefecto();
@@ -230,6 +233,67 @@ function nuevoItemCompra(nombre, por, extra) {
   return c;
 }
 
+/* ---------- comprar: de la lista al almacén ---------- */
+/* Al tachar algo de la lista se suma a su producto del almacén o, si no existe,
+   se crea en el almacén que le toca por su categoría. Queda apuntado en el carro
+   para poder deshacerlo y para el gasto de "Terminar compra". */
+function almacenPara(categoria) {
+  const por = (icono, re) => db.almacenes.find((a) => a.icono === icono) || db.almacenes.find((a) => re.test(norm(a.nombre)));
+  let a = null;
+  if (categoria === 'Congelados') a = por('congelador', /congel/);
+  else if (['Lácteos y huevos', 'Carne', 'Pescado', 'Fruta y verdura'].includes(categoria)) a = por('nevera', /nevera|frigo/);
+  else if (['Limpieza', 'Higiene'].includes(categoria)) a = por('limpieza', /hogar|limpieza|bano/);
+  else if (categoria === 'Bebidas') a = por('bebidas', /bebida|bodega/);
+  if (!a) a = por('despensa', /despensa/) || db.almacenes.slice().sort((x, y) => x.orden - y.orden)[0];
+  return a ? a.id : undefined;
+}
+function leerCantidad(texto) {
+  const m = /^\s*(\d+(?:[.,]\d+)?)\s*(.*)$/.exec(String(texto || ''));
+  if (!m) return { n: 1, unidad: null };
+  const n = parseFloat(m[1].replace(',', '.'));
+  const u = UNIDADES.find((x) => norm(x) === norm(m[2]) || norm(uni(1, x)) === norm(m[2]));
+  return { n: n > 0 ? n : 1, unidad: u || null };
+}
+function comprar(c, u) {
+  const q = leerCantidad(c.cantidad);
+  let p = (c.productoId && db.productos.find((x) => x.id === c.productoId)) || db.productos.find((x) => norm(x.nombre) === norm(c.nombre));
+  let creado = false;
+  if (p) {
+    p.cantidad = Math.round((p.cantidad + q.n) * 1000) / 1000; p.actualizado = ahora();
+    registrar(u, 'compra', p, q.n);
+  } else {
+    const cat = db.categorias.includes(c.categoria) ? c.categoria : adivinarCategoria(c.nombre);
+    p = limpiarProducto({ nombre: c.nombre, cantidad: q.n, unidad: q.unidad || 'uds', almacenId: almacenPara(cat), categoria: cat }, null);
+    db.productos.push(p); registrar(u, 'alta', p, q.n); creado = true;
+  }
+  const al = db.almacenes.find((a) => a.id === p.almacenId);
+  const e = { id: c.id, nombre: c.nombre, cantidad: c.cantidad || '', categoria: c.categoria, por: c.por || '', productoId: p.id, sumado: q.n, creado, almacen: al ? al.nombre : '', t: ahora(), quien: u.nombre };
+  db.carro = (db.carro || []).filter((x) => x.id !== c.id);
+  db.carro.unshift(e);
+  if (db.carro.length > 200) db.carro.length = 200;
+  db.compra = db.compra.filter((x) => x.id !== c.id);
+  ha.listaQuitar([c]).catch(() => {});
+  return e;
+}
+function deshacerCompra(id, u) {
+  const e = (db.carro || []).find((x) => x.id === id);
+  if (!e) return null;
+  const p = db.productos.find((x) => x.id === e.productoId);
+  if (p) {
+    if (e.creado && Math.abs(p.cantidad - e.sumado) < 0.0005) db.productos = db.productos.filter((x) => x.id !== p.id);
+    else { p.cantidad = Math.max(0, Math.round((p.cantidad - e.sumado) * 1000) / 1000); p.actualizado = ahora(); }
+    registrar(u, 'ajuste', p, -e.sumado);
+  }
+  db.carro = db.carro.filter((x) => x !== e);
+  let c = db.compra.find((x) => x.id === id);
+  if (!c) {
+    c = { id: e.id, nombre: e.nombre, cantidad: e.cantidad, productoId: db.productos.some((x) => x.id === e.productoId) ? e.productoId : null, categoria: e.categoria || adivinarCategoria(e.nombre), hecho: false, por: e.por, creado: ahora() };
+    db.compra.push(c);
+    ha.listaAnadir(c).catch(() => {});
+  }
+  return c;
+}
+
 /* ---------- API ---------- */
 const api = express.Router();
 api.use(auth);
@@ -238,10 +302,10 @@ api.get('/estado', (req, res) => {
   const ritmo = {};
   for (const p of db.productos) { const r = ritmoConsumo(p); if (r) ritmo[p.id] = Math.round(r * 1000) / 1000; }
   const out = {
-    version: VERSION, yo: vistaUsuario(req.u), ajustes: db.ajustes,
+    version: VERSION, yo: vistaUsuario(req.u), ajustes: db.ajustes, idiomas: idiomas.lista(),
     almacenes: db.almacenes.slice().sort((a, b) => a.orden - b.orden),
     categorias: db.categorias, unidades: UNIDADES, supers: db.supers,
-    productos: db.productos, compra: db.compra, ritmo,
+    productos: db.productos, compra: db.compra, carro: db.carro || [], ritmo,
     tickets: db.tickets.slice(0, 120).map((t) => ({ id: t.id, fecha: t.fecha, comercio: t.comercio, total: t.total, n: (t.articulos || []).length, por: t.por })),
     historial: db.historial.slice(0, 600),
     ha: { disponible: ha.disponible(), tickets: !!String(leerOpciones().gemini_api_key || process.env.FRESCARIO_GEMINI_KEY || '').trim(), lista: ha.estado().lista }
@@ -252,6 +316,8 @@ api.get('/estado', (req, res) => {
   }
   res.json(out);
 });
+
+api.get('/idiomas', (req, res) => res.json(idiomas.lista()));
 
 api.get('/eventos', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
@@ -271,8 +337,8 @@ api.put('/yo/prefs', (req, res) => {
   if (TEMAS.includes(b.tema)) p.tema = b.tema;
   if (ACENTOS.includes(b.acento)) p.acento = b.acento;
   if (b.kofi === 'si' || b.kofi === 'no') p.kofi = b.kofi;
-  if (['auto', 'es', 'en'].includes(b.idioma)) p.idioma = b.idioma;
-  if (['es', 'en'].includes(b.idiomaReal)) p.idiomaReal = b.idiomaReal;
+  if (b.idioma === 'auto' || idiomas.existe(b.idioma)) p.idioma = b.idioma;
+  if (idiomas.existe(b.idiomaReal)) p.idiomaReal = b.idiomaReal;
   if (Array.isArray(b.widgets)) {
     const vistos = new Set(); const w = [];
     for (const x of b.widgets) {
@@ -485,6 +551,11 @@ api.put('/compra/:id', puedeEditar, (req, res) => {
   const c = db.compra.find((x) => x.id === req.params.id);
   if (!c) return res.status(404).json({ error: 'Ese producto ya no está en la lista.' });
   const b = req.body || {};
+  if (b.hecho === true && db.ajustes.compraDirecta !== false) {
+    const e = comprar(c, req.u);
+    guardarYAvisar(req.u.id);
+    return res.json({ comprado: e });
+  }
   const antes = c.hecho;
   if (b.hecho !== undefined) c.hecho = !!b.hecho;
   if (b.nombre !== undefined && txt(b.nombre, 80)) c.nombre = txt(b.nombre, 80);
@@ -492,6 +563,12 @@ api.put('/compra/:id', puedeEditar, (req, res) => {
   if (b.categoria !== undefined && db.categorias.includes(b.categoria)) c.categoria = b.categoria;
   guardarYAvisar(req.u.id);
   if (antes !== c.hecho) ha.listaMarcar(c).catch(() => {});
+  res.json(c);
+});
+api.post('/compra/deshacer/:id', puedeEditar, (req, res) => {
+  const c = deshacerCompra(req.params.id, req.u);
+  if (!c) return res.status(404).json({ error: 'Ya no se puede deshacer.' });
+  guardarYAvisar(req.u.id);
   res.json(c);
 });
 api.delete('/compra/:id', puedeEditar, (req, res) => {
@@ -516,6 +593,19 @@ api.post('/compra/faltantes', puedeEditar, (req, res) => {
 });
 api.post('/compra/terminar', puedeEditar, (req, res) => {
   const b = req.body || {};
+  if (db.ajustes.compraDirecta !== false) {
+    /* lo que quedara tachado de antes de activar este modo también entra */
+    for (const c of db.compra.filter((x) => x.hecho)) comprar(c, req.u);
+    const carro = db.carro || [];
+    const importe = num(b.importe, 0);
+    if (importe > 0) {
+      db.tickets.unshift({ id: nuevoId(), fecha: ahora().slice(0, 10), comercio: canonSuper(b.super || ''), total: importe, articulos: carro.map((e) => ({ nombre: e.nombre, cantidad: e.sumado, precio: 0, pid: e.productoId })), por: req.u.nombre, creado: ahora(), manual: true });
+      db.tickets = db.tickets.slice(0, 500);
+    }
+    db.carro = [];
+    guardarYAvisar(req.u.id);
+    return res.json({ ok: true, quitados: carro.length });
+  }
   const hechos = db.compra.filter((c) => c.hecho);
   if (b.sumarAlAlmacen) {
     for (const c of hechos) {
@@ -540,6 +630,7 @@ api.post('/compra/terminar', puedeEditar, (req, res) => {
 /* administración */
 api.put('/ajustes', soloAdmin, (req, res) => {
   const b = req.body || {};
+  if (b.compraDirecta !== undefined) db.ajustes.compraDirecta = !!b.compraDirecta;
   if (b.diasAviso !== undefined) db.ajustes.diasAviso = Math.min(30, Math.max(1, Math.round(num(b.diasAviso, 3))));
   if (b.avisos && typeof b.avisos === 'object') {
     const a = db.ajustes.avisos;
@@ -662,7 +753,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 
 cargar();
 const server = app.listen(PORT, () => console.log('[frescario] Versión ' + VERSION + ' lista en el puerto ' + PORT + (DEV ? ' (modo desarrollo)' : '')));
-ha.iniciar({ db: () => db, guardar, emitir, opciones: leerOpciones, nuevoItemCompra: (n, por) => nuevoItemCompra(n, por) });
+ha.iniciar({ db: () => db, guardar, emitir, opciones: leerOpciones, nuevoItemCompra: (n, por) => nuevoItemCompra(n, por), compraDirecta: () => db.ajustes.compraDirecta !== false, comprar: (c) => comprar(c, { id: 'ha', nombre: 'Asistente de voz' }) });
 
 function apagar() {
   try { clearTimeout(tGuardar); guardarYa(); } catch (_) {}

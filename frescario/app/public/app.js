@@ -15,19 +15,37 @@
   /* ---------- idiomas ---------- */
   /* El castellano es el idioma base. Cada traducción vive en i18n/<idioma>.json:
      "textos" traduce textos exactos y "patrones" los que llevan números o nombres. */
-  var LANG = 'es', DICC = null, PATRONES = [], IDIOMAS = ['es', 'en'];
+  var LANG = 'es', DICC = null, PATRONES = [], INFO = null;
+  /* lista de idiomas que trae el servidor (uno por archivo de i18n) */
+  var IDIOMAS = [{ codigo: 'es', nombre: 'Español', locale: 'es-ES', decimal: ',' }, { codigo: 'en', nombre: 'English', locale: 'en-GB', decimal: '.' }];
+  function codigos() { return IDIOMAS.map(function (l) { return l.codigo; }); }
   function idiomaDe(pref) {
-    if (IDIOMAS.indexOf(pref) >= 0) return pref;
-    var n = String(navigator.language || 'es').toLowerCase();
-    return /^(es|ca|gl|eu)/.test(n) ? 'es' : 'en';
+    var cs = codigos();
+    if (cs.indexOf(pref) >= 0) return pref;
+    var navs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'es']);
+    for (var i = 0; i < navs.length; i++) {
+      var n = String(navs[i] || '').toLowerCase();
+      if (cs.indexOf(n) >= 0) return n;
+      var corto = n.split('-')[0];
+      if (cs.indexOf(corto) >= 0) return corto;
+      if (/^(ca|gl|eu)$/.test(corto)) return 'es';
+    }
+    return cs.indexOf('en') >= 0 ? 'en' : 'es';
   }
   function cargarIdioma(lang) {
+    INFO = null;
     if (lang === 'es') { LANG = 'es'; DICC = null; PATRONES = []; document.documentElement.lang = 'es'; return Promise.resolve(); }
-    return fetch('i18n/' + lang + '.json?v=' + encodeURIComponent((D && D.version) || '')).then(function (r) { return r.json(); }).then(function (j) {
-      DICC = j.textos || {};
-      PATRONES = (j.patrones || []).map(function (p) { return [new RegExp('^' + p[0] + '$'), p[1]]; });
+    var v = '.json?v=' + encodeURIComponent((D && D.version) || '');
+    function leer(c) { return fetch('i18n/' + c + v).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+    /* lo que falte en una traducción se muestra en inglés */
+    var base = (lang !== 'en' && codigos().indexOf('en') >= 0) ? leer('en').catch(function () { return {}; }) : Promise.resolve({});
+    return Promise.all([leer(lang), base]).then(function (r) {
+      var j = r[0], en = r[1];
+      DICC = Object.assign({}, en.textos || {}, j.textos || {});
+      PATRONES = (j.patrones || []).concat(en.patrones || []).map(function (p) { return [new RegExp('^' + p[0] + '$'), p[1]]; });
+      INFO = { locale: j.locale || lang, decimal: j.decimal === ',' ? ',' : '.', mesMayuscula: !!j.mesMayuscula };
       LANG = lang; document.documentElement.lang = lang;
-    }).catch(function () { LANG = 'es'; DICC = null; PATRONES = []; });
+    }).catch(function () { LANG = 'es'; DICC = null; PATRONES = []; INFO = null; });
   }
   function tr(s) {
     if (!DICC || !s) return s;
@@ -71,7 +89,9 @@
       else if (m.type === 'attributes') trAttrs(m.target);
     });
   }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS_TR });
-  var precarga = cargarIdioma(idiomaDe('auto'));
+  var precarga = fetch('api/idiomas', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (l) {
+    if (Array.isArray(l) && l.length) IDIOMAS = l;
+  }).catch(function () {}).then(function () { return cargarIdioma(idiomaDe('auto')); });
 
   /* ---------- utilidades ---------- */
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -123,11 +143,12 @@
   window.addEventListener('online', function () { vaciarCola(); });
   setInterval(function () { if (leerCola().length) vaciarCola(); }, 15000);
 
-  function toast(msg, error) {
-    $toast.innerHTML = (error ? '' : icono('check', 18, 'var(--acc)', 3)) + '<span>' + esc(msg) + '</span>';
-    $toast.className = 'on' + (error ? ' error' : '');
+  function toast(msg, error, accion) {
+    $toast.innerHTML = (error ? '' : icono('check', 18, 'var(--acc)', 3)) + '<span>' + esc(msg) + '</span>' + (accion ? '<button type="button" class="toast-acc">' + esc(accion.texto) + '</button>' : '');
+    $toast.className = 'on' + (error ? ' error' : '') + (S.mc ? ' alto' : '');
+    if (accion) $toast.querySelector('.toast-acc').onclick = function () { $toast.className = ''; accion.fn(); };
     clearTimeout(toast._t);
-    toast._t = setTimeout(function () { $toast.className = ''; }, 2600);
+    toast._t = setTimeout(function () { $toast.className = ''; }, accion ? 6000 : 2600);
   }
   function fallo(e) { toast(e && e.message ? e.message : 'Algo ha fallado.', true); }
   function iso(d) { d = new Date(d); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
@@ -137,7 +158,7 @@
     if (!p.caducidad) return null;
     return Math.round((new Date(p.caducidad + 'T00:00:00') - new Date(hoyISO() + 'T00:00:00')) / 86400000);
   }
-  function loc() { return LANG === 'en' ? 'en-GB' : 'es-ES'; }
+  function loc() { return INFO ? INFO.locale : 'es-ES'; }
   function fechaCorta(s) { return new Date(s + 'T00:00:00').toLocaleDateString(loc(), { day: 'numeric', month: 'short' }).replace('.', ''); }
   function nombreMes(d) { var m = d.toLocaleDateString(loc(), { month: 'long' }); return m.charAt(0).toUpperCase() + m.slice(1); }
   function diaCorto(d) { var w = d.toLocaleDateString(loc(), { weekday: 'short' }).replace('.', ''); return w.charAt(0).toUpperCase() + w.slice(1); }
@@ -152,7 +173,7 @@
     if (d <= 30) return { txt: 'En ' + d + ' días', cls: '' };
     return { txt: fechaCorta(p.caducidad), cls: 'ok' };
   }
-  function fmtNum(n) { var s = (Math.round(n * 1000) / 1000).toString(); return LANG === 'en' ? s : s.replace('.', ','); }
+  function fmtNum(n) { var s = (Math.round(n * 1000) / 1000).toString(); return (INFO ? INFO.decimal : ',') === '.' ? s : s.replace('.', ','); }
   function eur(n) { return (Math.round((n || 0) * 100) / 100).toLocaleString(loc(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'; }
   var SING = { uds: 'ud', paquetes: 'paquete', bricks: 'brick', botes: 'bote', bolsas: 'bolsa', latas: 'lata', botellas: 'botella', bandejas: 'bandeja', docenas: 'docena' };
   function uni(n, u) { return n === 1 && SING[u] ? SING[u] : u; }
@@ -246,10 +267,10 @@
     var caducados = conStock.filter(function (p) { var d = dias(p); return d !== null && d < 0; });
     var bajo = D.productos.filter(function (p) { return p.minimo > 0 && p.cantidad < p.minimo; });
     var pend = D.compra.filter(function (c) { return !c.hecho; });
-    var hechos = D.compra.filter(function (c) { return c.hecho; });
+    var hechos = directa() ? (D.carro || []).concat(D.compra.filter(function (c) { return c.hecho; })) : D.compra.filter(function (c) { return c.hecho; });
     var prevision = D.productos.filter(function (p) { var d = duraDias(p); return d !== null && d <= 7 && !enLista(p); }).sort(function (a, b) { return duraDias(a) - duraDias(b); });
     return { usalo: usalo, caducados: caducados, bajo: bajo, pend: pend, hechos: hechos, prevision: prevision,
-      pct: D.compra.length ? Math.round(hechos.length / D.compra.length * 100) : 0,
+      pct: (pend.length + hechos.length) ? Math.round(hechos.length / (pend.length + hechos.length) * 100) : 0,
       urgentes: usalo.filter(function (p) { return dias(p) <= aviso; }).length };
   }
   function gastoMes(offset) {
@@ -277,7 +298,7 @@
     inicio: function () { return [saludo() + ', ' + esc(nombreCorto()), '¿Qué hay en casa?']; },
     almacen: function () { return ['Toca un producto para ver y cambiar todo', 'Almacén']; },
     caducidades: function () { return ['Ordenado por lo que caduca antes', 'Úsalo primero']; },
-    compra: function () { return ['Toca cualquier producto para meterlo en el carro', 'Lista de la compra']; },
+    compra: function () { return [directa() ? 'Toca lo que vayas cogiendo y pasa solo al almacén' : 'Toca cualquier producto para meterlo en el carro', 'Lista de la compra']; },
     estadisticas: function () { return ['Gasto, consumo y lo que se tira', 'Estadísticas']; },
     ajustes: function () { return ['Lo tuyo y lo de toda la casa', 'Ajustes']; }
   };
@@ -387,7 +408,7 @@
     }
     if (w.k === 'compra') {
       var items = C.pend.slice(0, w.t >= 8 ? 8 : 5);
-      return '<button class="fila" data-ir="compra" style="padding:0;min-height:0;margin-bottom:12px"><span class="nom" style="white-space:normal"><span style="font-size:19px;font-weight:800">Por comprar</span><small>' + C.pend.length + ' pendientes · ' + C.hechos.length + ' en el carro</small></span><b style="font-size:24px;color:var(--acc-deep)">' + C.pct + '%</b></button>' +
+      return '<button class="fila" data-ir="compra" style="padding:0;min-height:0;margin-bottom:12px"><span class="nom" style="white-space:normal"><span style="font-size:19px;font-weight:800">Por comprar</span><small>' + C.pend.length + ' pendientes · ' + C.hechos.length + (directa() ? ' ya en casa' : ' en el carro') + '</small></span><b style="font-size:24px;color:var(--acc-deep)">' + C.pct + '%</b></button>' +
         '<span class="barra gruesa" style="margin-bottom:8px"><span style="width:' + C.pct + '%"></span></span>' +
         (items.length ? items.map(function (c) { return '<button class="fila" data-compra="' + c.id + '"><span class="check"></span><span class="nom">' + esc(c.nombre) + '</span><span class="sub">' + esc(c.cantidad || '') + '</span></button>'; }).join('') : '<div class="vacio" style="padding:14px">La lista está vacía.</div>') +
         '<button class="bt pri full" data-acc="modoCompra" style="margin-top:10px"' + (D.compra.length ? '' : ' disabled') + '>' + icono('carro', 18) + 'Ir a comprar</button>';
@@ -426,7 +447,7 @@
       var act = meses[5], ant = meses[4];
       var dif = ant.total ? Math.round((act.total - ant.total) / ant.total * 100) : null;
       return '<div class="card-cab"><h2>Gasto del mes</h2><button class="lnk" data-ir="estadisticas">Ver más</button></div>' +
-        '<button class="fila" data-ir="estadisticas" style="padding:0;min-height:0;align-items:flex-end;gap:16px"><span class="nom" style="white-space:normal"><span style="font-size:30px;font-weight:800">' + eur(act.total) + '</span><small>' + (dif === null ? 'en ' + (LANG === 'en' ? act.mes : act.mes.toLowerCase()) : (dif > 0 ? dif + '% más' : Math.abs(dif) + '% menos') + ' que en ' + (LANG === 'en' ? ant.mes : ant.mes.toLowerCase())) + '</small></span>' +
+        '<button class="fila" data-ir="estadisticas" style="padding:0;min-height:0;align-items:flex-end;gap:16px"><span class="nom" style="white-space:normal"><span style="font-size:30px;font-weight:800">' + eur(act.total) + '</span><small>' + (dif === null ? 'en ' + (INFO && INFO.mesMayuscula ? act.mes : act.mes.toLowerCase()) : (dif > 0 ? dif + '% más' : Math.abs(dif) + '% menos') + ' que en ' + (INFO && INFO.mesMayuscula ? ant.mes : ant.mes.toLowerCase())) + '</small></span>' +
         '<span class="mini-barras">' + meses.map(function (m, i) { return '<span title="' + m.mes + ': ' + eur(m.total) + '" style="height:' + Math.max(6, Math.round(m.total / max * 64)) + 'px;' + (i === 5 ? 'background:var(--acc)' : '') + '"></span>'; }).join('') + '</span></button>' +
         (D.tickets.length ? '' : '<p class="sub" style="margin:10px 0 0">Se calcula con los tickets que escaneéis o con el importe que pongáis al terminar la compra.</p>');
     }
@@ -502,7 +523,7 @@
   function vCompra(C) {
     var est = estimadoCompra(C.pend);
     var h = '<section class="card" style="display:flex;flex-direction:column;gap:14px">';
-    h += '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px"><b style="font-size:32px;color:var(--acc-deep)">' + C.pct + '%</b><span style="flex:1 1 220px;display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:14px">' + D.compra.length + ' productos · ' + C.hechos.length + ' en el carro' + (est.n ? ' · unos ' + eur(est.total) + ' por comprar' : '') + '</span><span class="barra gruesa"><span style="width:' + C.pct + '%"></span></span></span>' +
+    h += '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px"><b style="font-size:32px;color:var(--acc-deep)">' + C.pct + '%</b><span style="flex:1 1 220px;display:flex;flex-direction:column;gap:8px"><span style="font-weight:700;font-size:14px">' + (C.pend.length + C.hechos.length) + ' productos · ' + C.hechos.length + (directa() ? ' ya en casa' : ' en el carro') + (est.n ? ' · unos ' + eur(est.total) + ' por comprar' : '') + '</span><span class="barra gruesa"><span style="width:' + C.pct + '%"></span></span></span>' +
       (D.compra.length ? '<button class="bt pri" data-acc="modoCompra">' + icono('carro', 18) + 'Ir a comprar</button>' : '') + '</div>';
     if (puedeEditar()) {
       h += '<form class="add-row" id="f-compra" autocomplete="off"><input class="campo" style="flex:3 1 200px" name="nombre" placeholder="¿Qué hay que comprar?" list="dl-prods" aria-label="Producto" maxlength="80"><input class="campo" style="flex:1 1 90px" name="cantidad" placeholder="Cantidad" aria-label="Cantidad" maxlength="20"><button class="bt osc" type="submit">' + icono('mas', 18, 'currentColor', 2.4) + 'Añadir</button></form>';
@@ -511,7 +532,9 @@
     }
     if (D.ha.lista) h += '<p class="sub" style="margin:0">' + icono('sync', 14) + ' Sincronizada con la lista de Home Assistant, así podéis añadir cosas por voz.</p>';
     h += '</section>';
-    if (!D.compra.length) return h + '<section class="card"><div class="vacio"><b>La lista está vacía</b>Añade lo que necesites o pulsa "Añadir lo que falta" para traer lo que está bajo mínimo.</div></section>';
+    var yaCasa = directa() && (D.carro || []).length ? '<section class="card" style="padding:16px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:10px;padding-bottom:6px"><span class="ico tn-verde" style="width:36px;height:36px;border-radius:12px">' + icono('check', 20, 'var(--t-verde)', 3) + '</span><span style="flex:1;display:flex;flex-direction:column"><b>Ya en el almacén</b><small class="sub">Toca uno para devolverlo a la lista</small></span><span class="badge gris">' + D.carro.length + '</span></div>' +
+      D.carro.map(itemCarro).join('') + '</section>' : '';
+    if (!D.compra.length) return h + '<section class="card"><div class="vacio"><b>La lista está vacía</b>Añade lo que necesites o pulsa "Añadir lo que falta" para traer lo que está bajo mínimo.</div></section>' + yaCasa;
     var cats = [];
     D.compra.forEach(function (c) { if (cats.indexOf(c.categoria || 'Otros') < 0) cats.push(c.categoria || 'Otros'); });
     cats.sort(ordenCat);
@@ -524,7 +547,10 @@
       its.forEach(function (c) { h += itemCompra(c, true); });
       h += '</section>';
     });
-    return h + '</div>';
+    return h + '</div>' + (yaCasa ? '<div style="margin-top:16px">' + yaCasa + '</div>' : '');
+  }
+  function itemCarro(e) {
+    return '<div class="item hecho"><button class="fila" data-deshacer="' + esc(e.id) + '" aria-label="Devolver ' + esc(e.nombre) + ' a la lista"><span class="check on">' + icono('check', 15, 'var(--acc-ink)', 3) + '</span><span class="nom tachado">' + esc(e.nombre) + '<small>' + (e.almacen ? 'En ' + esc(e.almacen) : 'Guardando…') + '</small></span></button></div>';
   }
   function itemCompra(c, conX) {
     return '<div class="item' + (c.hecho ? ' hecho' : '') + '"><button class="fila" data-compra="' + c.id + '" aria-pressed="' + c.hecho + '"><span class="check' + (c.hecho ? ' on' : '') + '">' + (c.hecho ? icono('check', 15, 'var(--acc-ink)', 3) : '') + '</span><span class="nom' + (c.hecho ? ' tachado' : '') + '">' + esc(c.nombre) + '<small>' + esc(c.cantidad || '') + (c.por ? (c.cantidad ? ' · ' : '') + esc(c.por) : '') + '</small></span></button>' +
@@ -544,7 +570,7 @@
     C.pend.forEach(function (c) { if (cats.indexOf(c.categoria || 'Otros') < 0) cats.push(c.categoria || 'Otros'); });
     cats.sort(ordenCat);
     var est = estimadoCompra(D.compra);
-    var h = '<div class="mc-cab"><button class="bt-ic suave" data-cerrar="1" aria-label="Salir del modo compra">' + icono('x', 22) + '</button><div style="flex:1;min-width:0"><b style="font-size:20px">Modo compra</b><div class="sub">' + C.pend.length + ' por coger · ' + C.hechos.length + ' en el carro</div></div><b style="font-size:28px;color:var(--acc-deep)">' + C.pct + '%</b></div>' +
+    var h = '<div class="mc-cab"><button class="bt-ic suave" data-cerrar="1" aria-label="Salir del modo compra">' + icono('x', 22) + '</button><div style="flex:1;min-width:0"><b style="font-size:20px">Modo compra</b><div class="sub">' + C.pend.length + ' por coger · ' + C.hechos.length + (directa() ? ' ya en casa' : ' en el carro') + '</div></div><b style="font-size:28px;color:var(--acc-deep)">' + C.pct + '%</b></div>' +
       '<span class="barra gruesa" style="border-radius:0"><span style="width:' + C.pct + '%;border-radius:0"></span></span><div class="mc-cuerpo">';
     if (puedeEditar()) h += '<form class="add-row en-linea" id="f-compra" autocomplete="off"><input class="campo" style="flex:1 1 160px" name="nombre" placeholder="Añadir algo más" list="dl-prods2" maxlength="80" aria-label="Añadir producto"><button class="bt osc" type="submit" aria-label="Añadir">' + icono('mas', 18, 'currentColor', 2.4) + '</button></form><datalist id="dl-prods2">' + D.productos.map(function (p) { return '<option value="' + esc(p.nombre) + '">'; }).join('') + '</datalist>';
     if (!C.pend.length) h += '<div class="vacio"><b>¡Lo tienes todo!</b>Ya está todo en el carro.</div>';
@@ -557,8 +583,8 @@
       });
     });
     if (C.hechos.length) {
-      h += '<div class="mc-pasillo" style="margin-top:18px">' + icono('check', 18, 'var(--acc-deep)', 3) + 'En el carro</div>';
-      C.hechos.forEach(function (c) { h += '<button class="mc-item hecho" data-compra="' + c.id + '"><span class="check grande on">' + icono('check', 18, 'var(--acc-ink)', 3) + '</span><span class="nom tachado">' + esc(c.nombre) + '</span></button>'; });
+      h += '<div class="mc-pasillo" style="margin-top:18px">' + icono('check', 18, 'var(--acc-deep)', 3) + (directa() ? 'Ya en el almacén' : 'En el carro') + '</div>';
+      C.hechos.forEach(function (c) { var dc = directa() && !c.hecho; h += '<button class="mc-item hecho" ' + (dc ? 'data-deshacer' : 'data-compra') + '="' + esc(c.id) + '"><span class="check grande on">' + icono('check', 18, 'var(--acc-ink)', 3) + '</span><span class="nom tachado">' + esc(c.nombre) + (dc && c.almacen ? '<small>En ' + esc(c.almacen) + '</small>' : '') + '</span></button>'; });
     }
     h += '</div><div class="mc-pie">' + (est.n ? '<span class="sub" style="flex:1">Unos ' + eur(est.total) + ' en total</span>' : '<span style="flex:1"></span>') +
       '<button class="bt osc" data-acc="terminar"' + (C.hechos.length ? '' : ' disabled') + '>Terminar compra</button></div>';
@@ -617,7 +643,7 @@
     var h = '<div class="ajustes">';
     h += '<section class="card"><h2>Mi aspecto</h2><span class="sub">Solo te afecta a ti.</span>' +
       '<div class="seg" role="group" aria-label="Tema">' + [['claro', 'Claro', 'sol'], ['oscuro', 'Oscuro', 'luna'], ['auto', 'Automático', 'auto']].map(function (o) { return '<button class="' + (pr.tema === o[0] ? 'on' : '') + '" data-tema="' + o[0] + '">' + icono(o[2], 16) + o[1] + '</button>'; }).join('') + '</div>' +
-      '<b style="font-size:14px">Idioma</b><div class="seg" role="group" aria-label="Idioma">' + [['auto', 'Automático'], ['es', 'Español'], ['en', 'English']].map(function (o) { return '<button class="' + ((pr.idioma || 'auto') === o[0] ? 'on' : '') + '" data-idioma="' + o[0] + '"' + (o[0] !== 'auto' ? ' data-notr="1"' : '') + '>' + o[1] + '</button>'; }).join('') + '</div>' +
+      '<b style="font-size:14px">Idioma</b><div class="seg idiomas" role="group" aria-label="Idioma">' + [['auto', 'Automático']].concat(IDIOMAS.map(function (l) { return [l.codigo, l.nombre]; })).map(function (o) { return '<button class="' + ((pr.idioma || 'auto') === o[0] ? 'on' : '') + '" data-idioma="' + esc(o[0]) + '"' + (o[0] !== 'auto' ? ' data-notr="1"' : '') + '>' + esc(o[1]) + '</button>'; }).join('') + '</div>' +
       '<b style="font-size:14px">Color de acento</b><div class="acentos">' + [['tomate', '#FF6B47', 'Tomate'], ['menta', '#3CCB86', 'Menta'], ['uva', '#A08CFF', 'Uva'], ['mar', '#5AABFF', 'Mar']].map(function (a) { return '<button class="acento' + (pr.acento === a[0] ? ' on' : '') + '" style="background:' + a[1] + '" data-acento="' + a[0] + '" aria-label="Acento ' + a[2] + '"></button>'; }).join('') + '</div></section>';
 
     h += '<section class="card"><h2>Mis avisos</h2><span class="sub">Llegan a la app de Home Assistant de tu móvil.</span>';
@@ -653,6 +679,7 @@
         '<div class="cfg-fila"><span class="n">Recordar también lo ya caducado</span>' + sw(a.incluirCaducados !== false, 'data-avcad="1"', 'Incluir caducados en el aviso') + '</div>' +
         '<b style="font-size:14px">Marcar como "caduca pronto"</b><div class="seg">' + [1, 2, 3, 5, 7].map(function (n) { return '<button class="' + (D.ajustes.diasAviso === n ? 'on' : '') + '" data-aviso="' + n + '">' + n + (n === 1 ? ' día' : ' días') + '</button>'; }).join('') + '</div></section>';
 
+      h += '<section class="card"><h2>Lista de la compra</h2><div class="cfg-fila"><span class="n">Al tachar, meterlo en el almacén<small>' + (directa() ? 'Lo que tachas sale de la lista y se suma a su almacén al momento' : 'Lo tachado se queda en el carro hasta pulsar "Terminar compra"') + '</small></span>' + sw(directa(), 'data-cdir="1"', 'Meter en el almacén al tachar') + '</div></section>';
       var he = D.haEstado || {};
       h += '<section class="card"><h2>Home Assistant</h2><div class="lista-cfg">' +
         '<div class="cfg-fila"><span class="n">Conexión<small>' + (he.conectado ? 'Conectado' : 'Sin conexión') + '</small></span><span class="estado ' + (he.conectado ? 'ok' : 'mal') + '"></span></div>' +
@@ -874,7 +901,7 @@
           { t: 'Escanear otro', s: '', ic: 'codigo', attr: 'data-acc="escanear"' }
         ]);
       } else if (r.datos) {
-        abrirNuevo({ nombre: r.datos.nombre, categoria: r.datos.categoria, imagen: r.datos.imagen, codigo: r.codigo, almacenId: r.datos.categoria === 'Congelados' ? (D.almacenes.find(function (a) { return a.icono === 'congelador'; }) || {}).id : undefined, nota: r.datos.formato ? (LANG === 'en' ? 'Pack size: ' : 'Formato: ') + r.datos.formato : '' });
+        abrirNuevo({ nombre: r.datos.nombre, categoria: r.datos.categoria, imagen: r.datos.imagen, codigo: r.codigo, almacenId: r.datos.categoria === 'Congelados' ? (D.almacenes.find(function (a) { return a.icono === 'congelador'; }) || {}).id : undefined, nota: r.datos.formato ? (tr('Formato') + ': ') + r.datos.formato : '' });
         toast('Encontrado. Revisa los datos y guarda.');
       } else {
         abrirNuevo({ codigo: r.codigo });
@@ -1033,14 +1060,42 @@
     });
   }
   function hecho(r, msg) { if (msg) toast(msg); return recargar().then(function () { return r; }); }
+  function directa() { return !D || !D.ajustes || D.ajustes.compraDirecta !== false; }
   function marcarCompra(id) {
     var c = D.compra.find(function (x) { return x.id === id; });
     if (!c || !puedeEditar()) return;
+    if (directa() && !c.hecho) {
+      /* comprado: sale de la lista y entra en el almacén al momento */
+      var pos = D.compra.indexOf(c);
+      D.compra.splice(pos, 1);
+      var e = { id: c.id, nombre: c.nombre, cantidad: c.cantidad, productoId: c.productoId, almacen: '' };
+      D.carro = [e].concat(D.carro || []);
+      if (navigator.vibrate) navigator.vibrate(20);
+      if (S.mc) pintarMC(); pintar();
+      guardarCache();
+      apiCola('PUT', 'compra/' + c.id, { hecho: true }).then(function (r) {
+        if (r.encolado) { toast(c.nombre + ': se guarda cuando vuelva la conexión'); return; }
+        var cm = r.comprado || {};
+        toast(c.nombre + (cm.almacen ? ' ya está en ' + cm.almacen : ' ya está en el almacén'), false, { texto: 'Deshacer', fn: function () { deshacerCompra(c.id); } });
+        recargar();
+      }).catch(function (err) {
+        D.carro = (D.carro || []).filter(function (x) { return x !== e; });
+        D.compra.splice(pos, 0, c);
+        if (S.mc) pintarMC(); pintar(); fallo(err);
+      });
+      return;
+    }
     c.hecho = !c.hecho;
     if (navigator.vibrate) navigator.vibrate(20);
     if (S.mc) pintarMC(); pintar();
     guardarCache();
     apiCola('PUT', 'compra/' + c.id, { hecho: c.hecho }).then(function (r) { if (!r.encolado) recargar(); }).catch(function (e) { c.hecho = !c.hecho; if (S.mc) pintarMC(); pintar(); fallo(e); });
+  }
+  function deshacerCompra(id) {
+    if (!puedeEditar()) return;
+    api('POST', 'compra/deshacer/' + encodeURIComponent(id), {}).then(function (r) {
+      return hecho(r, r.nombre + ' vuelve a la lista');
+    }).then(function () { if (S.mc) pintarMC(); }).catch(fallo);
   }
   function descargarCopia() {
     fetch('api/copia', { credentials: 'same-origin' }).then(function (r) { if (!r.ok) throw new Error('No se ha podido descargar.'); return r.blob(); }).then(function (b) {
@@ -1107,6 +1162,8 @@
       api('POST', 'compra', { nombre: pp.nombre, productoId: pp.id }).then(function (r) { return hecho(r, r.repetido ? 'Ya estaba en la lista' : 'Añadido a la lista'); }).catch(fallo); return;
     }
     if (ds.compra) { marcarCompra(ds.compra); return; }
+    if (ds.deshacer) { deshacerCompra(ds.deshacer); return; }
+    if (ds.cdir) { api('PUT', 'ajustes', { compraDirecta: !directa() }).then(function (r) { return hecho(r, 'Guardado'); }).catch(fallo); return; }
     if (ds.cdel) { var cdel = ds.cdel; D.compra = D.compra.filter(function (x) { return x.id !== cdel; }); pintar(); if (S.mc) pintarMC(); apiCola('DELETE', 'compra/' + cdel).then(function (r) { if (!r.encolado) recargar(); }).catch(fallo); return; }
     if (ds.aviso) { api('PUT', 'ajustes', { diasAviso: parseInt(ds.aviso, 10) }).then(function (r) { return hecho(r, 'Guardado'); }).catch(fallo); return; }
     if (ds.aedit) { abrirAlmacen(almPorId(ds.aedit)); return; }
@@ -1195,8 +1252,8 @@
       var ligados = C.hechos.filter(function (c) { return c.productoId; }).length;
       var est = estimadoCompra(C.hechos);
       var volverMC = S.mc;
-      abrirCapa('<div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="dlg-t"><h3 id="dlg-t">Terminar compra</h3><p>Se quitan de la lista los ' + C.hechos.length + ' productos que están en el carro.</p>' +
-        (ligados ? '<label class="cfg-fila" style="cursor:pointer"><span class="n">Sumarlos a su almacén<small>' + ligados + ' de ellos ya están en el almacén</small></span><input type="checkbox" id="sumar" checked style="width:22px;height:22px;accent-color:var(--acc)"></label>' : '') +
+      abrirCapa('<div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="dlg-t"><h3 id="dlg-t">Terminar compra</h3><p>' + (directa() ? (C.hechos.length === 1 ? 'Has metido 1 producto en el almacén. ' : 'Has metido ' + C.hechos.length + ' productos en el almacén. ') + 'Si quieres, apunta cuánto ha costado para tus estadísticas.' : 'Se quitan de la lista los ' + C.hechos.length + ' productos que están en el carro.') + '</p>' +
+        (ligados && !directa() ? '<label class="cfg-fila" style="cursor:pointer"><span class="n">Sumarlos a su almacén<small>' + ligados + ' de ellos ya están en el almacén</small></span><input type="checkbox" id="sumar" checked style="width:22px;height:22px;accent-color:var(--acc)"></label>' : '') +
         '<div class="form"><label class="f"><span>¿Cuánto ha costado?</span><input id="importe" type="number" inputmode="decimal" min="0" step="0.01" placeholder="' + (est.n ? fmtNum(Math.round(est.total * 100) / 100) : 'Opcional') + '"></label><label class="f"><span>¿Dónde?</span><input id="super" list="dl-sup" maxlength="40" placeholder="Opcional"></label></div>' +
         '<datalist id="dl-sup">' + D.supers.map(function (s) { return '<option value="' + esc(s) + '">'; }).join('') + '</datalist>' +
         '<div class="acc"><button class="bt" data-acc="' + (volverMC ? 'modoCompra' : 'cerrarDlg') + '">Cancelar</button><button class="bt osc" data-acc="terminarOk">Terminar</button></div></div>');

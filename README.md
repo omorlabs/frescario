@@ -34,7 +34,7 @@ Frescario is a Home Assistant app (formerly called add-on) that keeps track of e
 - **Expiry dates that actually work.** A daily notification to your phone: *"Today: chicken breast. Tomorrow: plain yogurt."* You choose the time and how many days ahead.
 - **Live barcode scanner.** Point your phone camera at a product: name, photo and category are filled in from Open Food Facts.
 - **Live receipt scanner.** Take a photo of your supermarket receipt (long ones in several parts) and the whole shopping trip goes into your pantry, with prices. Uses Google Gemini with your own key.
-- **Smart shopping list.** Grouped by aisle, full-screen shopping mode with big tap targets, works without signal inside the shop and syncs when you are back online.
+- **Smart shopping list.** Grouped by aisle, full-screen shopping mode with big tap targets. Tick something in the shop and it goes straight into the right storage area (with undo). Works without signal inside the shop and syncs when you are back online.
 - **Voice.** Syncs both ways with a Home Assistant to-do list, so "add milk to the shopping list" works with Assist.
 - **Consumption forecast.** Learns how fast you use things and warns you before they run out.
 - **Prices and statistics.** Price per supermarket for each product, monthly spending, what you consume most and what ends up in the bin.

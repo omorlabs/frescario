@@ -1,5 +1,14 @@
 # Cambios
 
+## 1.5.0
+
+- Al tachar algo en la lista de la compra entra al momento en el almacén y sale de la lista. Si es nuevo, se crea en el almacén que le toca (nevera, congelador, despensa...). Con botón de deshacer.
+- También funciona al tacharlo desde la lista de Home Assistant.
+- "Terminar compra" sirve ahora para apuntar lo que ha costado.
+- El administrador puede volver al modo anterior (todo en el carro hasta terminar) en Ajustes.
+- Añadir un idioma nuevo es solo añadir un archivo: aparece solo en el selector y los avisos del móvil también salen en ese idioma.
+- El idioma automático tiene en cuenta todos los idiomas que tengas configurados en el navegador.
+
 ## 1.4.0
 
 - El proyecto pasa a github.com/omorlabs/frescario.
