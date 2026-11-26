@@ -206,20 +206,33 @@ function ritmoConsumo(p) {
 function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs, alta: u.alta }; }
 
 const PISTAS = [
-  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir|milk|yogurt|yoghurt|cheese|egg|butter|cream)/, 'Lácteos y huevos'],
-  [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido|chicken|beef|pork|meat|ham|bacon|sausage|turkey|mince)/, 'Carne'],
-  [/(merluza|salmon|atun|bacalao|gamba|pescado|sardina|calamar|mejillon|fish|tuna|cod|prawn|shrimp|hake)/, 'Pescado'],
-  [/(manzana|platano|naranja|pera|tomate|lechuga|cebolla|patata|zanahoria|pimiento|fruta|verdura|ajo|limon|fresa|uva|aguacate|espinaca|calabacin|pepino|apple|banana|orange|pear|tomato|lettuce|onion|potato|carrot|pepper|fruit|vegetable|garlic|lemon|strawberr|grape|avocado|spinach|courgette|zucchini|cucumber)/, 'Fruta y verdura'],
-  [/(pan |baguette|bolleria|croissant|tostada|pan$|^ pan|bread|bagel|muffin)/, 'Panadería'],
-  [/(lata|conserva|bote|canned|tinned|chopped tomatoes)/, 'Conservas'],
-  [/(congelad|helado|pizza|frozen|ice cream)/, 'Congelados'],
-  [/(agua|zumo|refresco|cerveza|vino|cola|bebida|water|juice|soda|beer|wine|drink)/, 'Bebidas'],
-  [/(arroz|pasta|macarron|espagueti|lenteja|garbanzo|alubia|harina|fideo|rice|spaghetti|noodle|lentil|chickpea|bean|flour)/, 'Pasta, arroz y legumbres'],
-  [/(cafe|cacao|cereal|galleta| te |infusion|mermelada|azucar|coffee|cocoa|cookie|biscuit| tea |jam|sugar|oat)/, 'Desayuno'],
-  [/(aceite|vinagre| sal |salsa|especia|ketchup|mayonesa|oregano|pimienta| oil|vinegar| salt |sauce|spice|mayo)/, 'Salsas y especias'],
-  [/(chocolate|patatas fritas|snack|chuche|dulce|frutos secos|crisps|chips|candy|sweets|nuts)/, 'Snacks y dulces'],
-  [/(detergente|lejia|friegasuelos|suavizante|lavavajillas|bayeta|estropajo|papel de cocina|bolsas de basura|detergent|bleach|dishwasher|softener|sponge|kitchen paper|kitchen roll|bin bags)/, 'Limpieza'],
-  [/(champu|gel|pasta de dientes|desodorante|papel higienico|compresa|maquinilla|crema|shampoo|toothpaste|deodorant|toilet paper|razor|soap)/, 'Higiene']
+  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir| milk |yogurt|yoghurt|cheese| egg |butter|cream|cheddar|mozzarella|parmesan|ricotta|gouda|brie|cottage cheese|cream cheese|condensed milk|evaporated milk|milk powder|baby formula|infant formula)/, 'Lácteos y huevos'],
+  
+  [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido|chicken|beef|pork|meat| ham |bacon|sausage|turkey|mince|steak|lamb|duck|meatball|veal|ribs|brisket|pepperoni)/, 'Carne'],
+  
+  [/(lata|conserva|bote|canned|tinned|chopped tomatoes|tomato paste|tomato puree|canned beans|canned tuna|canned corn|pickles|olives|preserved)/, 'Conservas'],
+
+  [/(merluza|salmon|atun|bacalao|gamba|pescado|sardina|calamar|mejillon|fish|tuna|cod|prawn|shrimp|hake|mackerel|anchovy|sardine|mussel|oyster|crab|lobster|squid|octopus|clam|trout)/, 'Pescado'],
+
+  [/(chocolate|patatas fritas|snack|chuche|dulce|frutos secos|crisps|chips|candy|sweets|nuts|popcorn|pretzel|chocolate bar|gummy|cracker|biscuits|marshmallow|cereal bar|dried fruit|trail mix|potato chips|tortilla chips|rice cakes|granola bars?)/, 'Snacks y dulces'],
+
+  [/(manzana|platano|naranja|pera|tomate|lechuga|cebolla|patata|zanahoria|pimiento|fruta|verdura|ajo|limon|fresa|uva|aguacate|espinaca|calabacin|pepino|apple|banana|orange|pear|tomato|lettuce|onion|potato|carrot|pepper|fruit|vegetable|garlic|lemon|strawberr|grape|avocado|spinach|courgette|zucchini|cucumber|mango|pineapple|watermelon|melon|broccoli|cabbage|cauliflower|mushroom|celery|eggplant|aubergine|kiwi|peach|plum|cherry|blueberr|raspberr|blackberr|papaya|sweet potato|beetroot|radish|asparagus|pumpkin|kale|baby puree)/, 'Fruta y verdura'],
+
+  [/(pan |baguette|bolleria|croissant|tostada|pan$|^ pan|bread|bagel|muffin|toast|pita|tortilla|sourdough|donut|doughnut|pancake|waffle|brioche|rolls|pastry)/, 'Panadería'],
+
+  [/(congelad|helado|pizza|frozen|ice cream|frozen vegetables|frozen berries|frozen fries|frozen chicken|frozen fish|frozen peas|frozen fruit)/, 'Congelados'],
+
+  [/(agua|zumo|refresco|cerveza|vino|cola|bebida|water|juice|soda|beer|wine|drink|sparkling water|energy drink|sports drink|coconut water|iced tea|lemonade|smoothie|milkshake|tonic water|kombucha|cola drink|apple cider| fruit squash| tea |still water)/, 'Bebidas'],
+
+  [/(arroz|pasta|macarron|espagueti|lenteja|garbanzo|alubia|harina|fideo|rice|spaghetti|noodle|lentil|chickpea|bean|flour|penne|fusilli|lasagna|quinoa|couscous|bulgur|barley|split peas)/, 'Pasta, arroz y legumbres'],
+
+  [/(cafe|cacao|cereal|galleta| te |infusion|mermelada|azucar|coffee|cocoa|cookie|biscuit| jam |sugar| oat |oats|oatmeal|granola|honey|peanut butter|muesli|pancake mix|maple syrup|baby cereal|granola)/, 'Desayuno'],
+
+  [/(aceite|vinagre| sal |salsa|especia|ketchup|mayonesa|oregano|pimienta| oil|vinegar| salt |sauce|spice|mayo|mustard|soy sauce|chili sauce|hot sauce|curry powder|paprika|cumin|cinnamon|basil|thyme|rosemary|turmeric)/, 'Salsas y especias'],
+
+  [/(detergente|lejia|friegasuelos|suavizante|lavavajillas|bayeta|estropajo|papel de cocina|bolsas de basura|detergent|bleach|dishwasher|softener|sponge|kitchen paper|kitchen roll|bin bags|dish soap|laundry detergent|disinfectant|floor cleaner|glass cleaner|all purpose cleaner|washing powder|fabric softener|toilet cleaner|stain remover|drain cleaner|washing up liquid)/, 'Limpieza'],
+
+  [/(champu|gel|pasta de dientes|desodorante|papel higienico|compresa|maquinilla|crema|shampoo|toothpaste|deodorant|toilet paper|razor|soap|conditioner|body wash|moisturizer|sunscreen|cotton pads|sanitary pads|tampons|toothbrush|mouthwash|hand cream|lotion)/, 'Higiene']
 ];
 function adivinarCategoria(nombre) {
   const n = ' ' + norm(nombre) + ' ';
