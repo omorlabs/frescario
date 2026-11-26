@@ -206,7 +206,7 @@ function ritmoConsumo(p) {
 function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs, alta: u.alta }; }
 
 const PISTAS = [
-  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir| milk |yogurt|yoghurt|cheese| egg |butter|cream|cheddar|mozzarella|parmesan|ricotta|gouda|brie|cottage cheese|cream cheese|condensed milk|evaporated milk|milk powder|baby formula|infant formula)/, 'Lácteos y huevos'],
+  [/(leche|yogur|queso|huevo|mantequilla|nata|kefir| milk |yogurt|yoghurt|cheese| eggs? |butter|cream|cheddar|mozzarella|parmesan|ricotta|gouda|brie|cottage cheese|cream cheese|condensed milk|evaporated milk|milk powder|baby formula|infant formula)/, 'Lácteos y huevos'],
   
   [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido|chicken|beef|pork|meat| ham |bacon|sausage|turkey|mince|steak|lamb|duck|meatball|veal|ribs|brisket|pepperoni)/, 'Carne'],
   
@@ -218,7 +218,7 @@ const PISTAS = [
 
   [/(manzana|platano|naranja|pera|tomate|lechuga|cebolla|patata|zanahoria|pimiento|fruta|verdura|ajo|limon|fresa|uva|aguacate|espinaca|calabacin|pepino|apple|banana|orange|pear|tomato|lettuce|onion|potato|carrot|pepper|fruit|vegetable|garlic|lemon|strawberr|grape|avocado|spinach|courgette|zucchini|cucumber|mango|pineapple|watermelon|melon|broccoli|cabbage|cauliflower|mushroom|celery|eggplant|aubergine|kiwi|peach|plum|cherry|blueberr|raspberr|blackberr|papaya|sweet potato|beetroot|radish|asparagus|pumpkin|kale|baby puree)/, 'Fruta y verdura'],
 
-  [/(pan |baguette|bolleria|croissant|tostada|pan$|^ pan|bread|bagel|muffin|toast|pita|tortilla|sourdough|donut|doughnut|pancake|waffle|brioche|rolls|pastry)/, 'Panadería'],
+  [/(pan |baguette|bolleria|croissant|tostada|pan$|^ pan|bread|bagel|muffin|toast|pita|tortilla|sourdough|donut|doughnut|pancake|waffle|brioche|pastry)/, 'Panadería'],
 
   [/(congelad|helado|pizza|frozen|ice cream|frozen vegetables|frozen berries|frozen fries|frozen chicken|frozen fish|frozen peas|frozen fruit)/, 'Congelados'],
 
