@@ -1,5 +1,10 @@
 # Cambios
 
+## 1.5.1
+
+- Frescario acierta mucho más la categoría al añadir un producto: cientos de palabras nuevas en inglés y español (bebé, limpieza, higiene, snacks, pescado...). Gracias a @nessnab, primera aportación de la comunidad.
+- Lo congelado va siempre a Congelados, y la crema de manos, la crema de cacahuete, la mermelada, los zumos y el agua ya no caen en la categoría equivocada.
+
 ## 1.5.0
 
 - Al tachar algo en la lista de la compra entra al momento en el almacén y sale de la lista. Si es nuevo, se crea en el almacén que le toca (nevera, congelador, despensa...). Con botón de deshacer.

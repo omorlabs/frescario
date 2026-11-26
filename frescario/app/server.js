@@ -12,7 +12,7 @@ const ha = require('./ha');
 const ext = require('./externos');
 const idiomas = require('./idiomas');
 
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const PORT = parseInt(process.env.PORT || '8099', 10);
 const DEV = process.env.FRESCARIO_DEV === '1';
 const DATA_DIR = process.env.FRESCARIO_DATA || '/data';
@@ -206,6 +206,12 @@ function ritmoConsumo(p) {
 function vistaUsuario(u) { return { id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol, prefs: u.prefs, alta: u.alta }; }
 
 const PISTAS = [
+  /* primero los casos que, si no, caerían en otra categoría por una palabra suelta */
+  [/(congelad|frozen|helado|ice cream|ice lolly)/, 'Congelados'],
+  [/(hand cream|body cream|face cream|sun cream|crema de manos|crema corporal|crema facial|crema solar|protector solar)/, 'Higiene'],
+  [/(peanut butter|crema de cacahuete| jam |mermelada|marmalade)/, 'Desayuno'],
+  [/(lemonade|limonada|apple cider|sidra|juice|zumo|botella de agua| agua )/, 'Bebidas'],
+
   [/(leche|yogur|queso|huevo|mantequilla|nata|kefir| milk |yogurt|yoghurt|cheese| eggs? |butter|cream|cheddar|mozzarella|parmesan|ricotta|gouda|brie|cottage cheese|cream cheese|condensed milk|evaporated milk|milk powder|baby formula|infant formula)/, 'Lácteos y huevos'],
   
   [/(pollo|ternera|cerdo|carne|jamon|chorizo|salchich|pavo|lomo|hamburgues|embutido|chicken|beef|pork|meat| ham |bacon|sausage|turkey|mince|steak|lamb|duck|meatball|veal|ribs|brisket|pepperoni)/, 'Carne'],
